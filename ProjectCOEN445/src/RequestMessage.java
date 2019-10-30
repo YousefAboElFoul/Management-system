@@ -1,15 +1,14 @@
-import java.sql.Time;
 import java.util.ArrayList;
 import java.util.Date;
 
-
 public class RequestMessage {
-    final static public int REQUEST_CODE = 1111;
+
+    final static public int RQ_CODE = Message.REQUEST_CODE;
     public String RQ_NUMBER = null ;
     public Date RQ_DATE;
-    String  RQ_TIME;
+    public String  RQ_TIME;
     public int MIN_NUMBER_OF_PARTICIPANTS;
-    public ArrayList <String>LIST_OF_PARTICIPANTS = new ArrayList<>();
+    public ArrayList <String>LIST_OF_PARTICIPANTS;
     public String RQ_TOPIC;
 
 
@@ -22,8 +21,8 @@ public class RequestMessage {
         this.RQ_TOPIC = RQ_TOPIC;
     }
 
-    public static int getRequestCode() {
-        return REQUEST_CODE;
+    public static int getRQ_CODE() {
+        return RQ_CODE;
     }
 
     public Date getRQ_DATE() {
@@ -72,5 +71,10 @@ public class RequestMessage {
 
     public void setRQ_NUMBER(String RQ_NUMBER) {
         this.RQ_NUMBER = RQ_NUMBER;
+    }
+
+    public String printReqMessage() {
+        String output = "{" + this.getRQ_CODE() + " | " + this.getRQ_NUMBER() + " | " + this.getRQ_DATE() + " | " + this.getRQ_TIME() + " | " + this.getMIN_NUMBER_OF_PARTICIPANTS() + " | " + this.getLIST_OF_PARTICIPANTS() + " | " + this.getRQ_TOPIC() + "}";
+        return output;
     }
 }
