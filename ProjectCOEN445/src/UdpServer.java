@@ -2,14 +2,18 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.util.Scanner;
 
 public class UdpServer
 {
-    private static Rooms Current_room=  new Rooms();
+
 
 
     public static void main(String[] args) throws IOException {
+
+        System.out.println("Starting UDP SERVER");
         DatagramSocket ds = new DatagramSocket(44444);
         byte[] receive = new byte[1024];
         DatagramPacket DpReceive = null;
@@ -49,19 +53,4 @@ public class UdpServer
         }
         ds.close();
     }
-        /*This for checking the state of each room
-         */
-        public static String Reserveroom()
-        {
-            if (Current_room.ROOM_ONE_STATE==true)
-            {
-                Current_room.setROOM_ONE_STATE(false);
-                return Current_room.getRoomOne()+"was reserved";
-            }
-            else if (Current_room.ROOM_TWO_STATE==true)
-            { Current_room.setROOM_TWO_STATE(false);
-                return Current_room.getRoomTwo() +"was reserved"; }
-
-            return"no Room available";
-        }
 }

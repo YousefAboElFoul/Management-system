@@ -2,46 +2,13 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f19721d6-fdfe-4bf0-b9b8-035f5e58ce94" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/vcs.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/AcceptMessage.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/AddMessage.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/AddedMessage.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/CancelMessageI.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/CancelMessageII.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/ConfirmMessage.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/InviteMessage.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/NotScheduledMessage.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/RejectMessage.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/ResponseMessage.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/RoomChangeMessage.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/ScheduledMessage.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/WithdrawMessageI.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/WithdrawMessageII.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/test.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/AcceptMessage.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/AddMessage.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/AddedMessage.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/CancelMessageI.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/CancelMessageII.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ConfirmMessage.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/InviteMessage.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/NotScheduledMessage.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/RejectMessage.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ResponseMessage.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/RoomChangeMessage.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/Rooms.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/ScheduledMessage.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/WithdrawMessageI.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/WithdrawMessageII.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/test.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/codeStyles/Project.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/.idea/dbnavigator.xml" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/RoomsUtility.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ProjectCOEN445/Message.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/Message.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ProjectCOEN445/RequestMessage.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/RequestMessage.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ProjectCOEN445/UdpClient.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/UdpClient.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/ProjectCOEN445.iml" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectCOEN445.iml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/ProjectCOEN445/UdpServer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/UdpServer.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Message.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Message.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/RequestMessage.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/RequestMessage.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/UdpClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/UdpClient.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/Rooms.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Rooms.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/UdpServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/UdpServer.java" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -64,10 +31,12 @@
   <component name="ProjectLevelVcsManager" settingsEditedManually="true" />
   <component name="PropertiesComponent">
     <property name="SHARE_PROJECT_CONFIGURATION_FILES" value="true" />
-    <property name="last_opened_file_path" value="$PROJECT_DIR$" />
+    <property name="com.intellij.ide.scratch.LRUPopupBuilder$1/New Scratch File" value="SQLITE-SQL" />
+    <property name="last_opened_file_path" value="$USER_HOME$/Downloads/sqlite-jdbc-3.27.2.1.jar!/" />
     <property name="project.structure.last.edited" value="Modules" />
     <property name="project.structure.proportion" value="0.0" />
     <property name="project.structure.side.proportion" value="0.2" />
+    <property name="settings.editor.selected.configurable" value="preferences.pluginManager" />
   </component>
   <component name="RunDashboard">
     <option name="ruleStates">
@@ -121,10 +90,23 @@
       <map>
         <entry key="MAIN">
           <value>
-            <State />
+            <State>
+              <option name="COLUMN_ORDER" />
+            </State>
           </value>
         </entry>
       </map>
     </option>
+  </component>
+  <component name="XDebuggerManager">
+    <breakpoint-manager>
+      <breakpoints>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/UdpClient.java</url>
+          <line>42</line>
+          <option name="timeStamp" value="1" />
+        </line-breakpoint>
+      </breakpoints>
+    </breakpoint-manager>
   </component>
 </project>
