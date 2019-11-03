@@ -4,11 +4,6 @@ public class ResponseMessage {
     public String RQ_NUMBER;
     public String RP_MESSAGE;
 
-    public ResponseMessage(String RP_NUMBER, String RP_MESSAGE) {
-        this.RQ_NUMBER = RP_NUMBER;
-        this.RP_MESSAGE = RP_MESSAGE;
-    }
-
     public ResponseMessage(String RP_NUMBER) {
         this.RQ_NUMBER = RP_NUMBER;
         this.RP_MESSAGE = Message.UNAVAILABLE_MSG;

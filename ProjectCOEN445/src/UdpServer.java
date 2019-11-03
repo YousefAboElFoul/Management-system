@@ -6,7 +6,7 @@ import java.sql.ResultSet;
 import java.sql.SQLException;
 import java.util.Scanner;
 
-public class UdpServer
+public class UdpServer extends Utility
 {
 
 
@@ -28,9 +28,14 @@ public class UdpServer
             ds.receive(DpReceive);
             String str = new String(DpReceive.getData(), 0, DpReceive.getLength());
             String st = DpReceive.getSocketAddress().toString();
-            System.out.println("Client:-" + str);
-            System.out.println("Client1:-" + st);
+            String ot = "Client-" + st +":-" + str;
 
+            System.out.println(ot);
+
+            //TODO
+//            Object obj = Utility.parsingMesssage(ot);
+//            if (obj instanceof RequestMessage)
+//            {}
 
             if (str.equals("bye")) {
                 System.out.println("Client sent bye.....EXITING");
@@ -41,14 +46,15 @@ public class UdpServer
             receive = new byte[1024];
 
 
-            Scanner sc = new Scanner(System.in);
-            System.out.println("Please Input your inputs");
-            String inp = sc.next().toString();
-            buf_s = inp.getBytes();
-            reserveroom = Reserveroom();
-            System.out.println(reserveroom);
-            DatagramPacket DpSend = new DatagramPacket(buf_s, buf_s.length, ip, 44445);
-            ds.send(DpSend);
+            //TODO
+//            Scanner sc = new Scanner(System.in);
+//            System.out.println("Please Input your inputs");
+//            String inp = sc.next().toString();
+//            buf_s = inp.getBytes();
+//            reserveroom = Reserveroom();
+//            System.out.println(reserveroom);
+//            DatagramPacket DpSend = new DatagramPacket(buf_s, buf_s.length, ip, 44445);
+//            ds.send(DpSend);
 
         }
         ds.close();

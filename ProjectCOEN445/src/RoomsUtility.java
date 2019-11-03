@@ -16,6 +16,6 @@ public class RoomsUtility extends Rooms{
         {  setRoomIndex(Current_room.ROOM_TWO_STATE,i,false);
             return Current_room.getRoomTwo() +"was reserved"; }
 
-        return"no Room available at time "+ i;
+        return Message.UNAVAILABLE_MSG;
     }
 }

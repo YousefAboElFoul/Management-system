@@ -7,7 +7,7 @@ import java.util.Date;
 public class test {
     public static void main(String[] args) throws IOException
     {
-        String d = "March 25 2019 15:30";
+        String d = "25/03/2019 15:30";
         String t = "15:00:00";
 
         Date dr = new Date(d);
