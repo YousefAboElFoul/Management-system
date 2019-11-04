@@ -2,14 +2,13 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.sql.ResultSet;
-import java.sql.SQLException;
-import java.util.Scanner;
+import java.util.Iterator;
+import java.util.PriorityQueue;
+import java.util.Queue;
+import java.io.*;
 
 public class UdpServer extends Utility
 {
-
-
 
     public static void main(String[] args) throws IOException {
 
@@ -17,7 +16,10 @@ public class UdpServer extends Utility
         DatagramSocket ds = new DatagramSocket(44444);
         byte[] receive = new byte[1024];
         DatagramPacket DpReceive = null;
-        String reserveroom;
+
+        // Queue that holds all the pending messages
+        PriorityQueue <String> pendingMessagesToBeTreated = new PriorityQueue<>();
+        Iterator itr = pendingMessagesToBeTreated.iterator();
 
         //Sending conf
         InetAddress ip = InetAddress.getByName("127.0.0.1");
@@ -32,21 +34,25 @@ public class UdpServer extends Utility
 
             System.out.println(ot);
 
-            //TODO
-//            Object obj = Utility.parsingMesssage(ot);
-//            if (obj instanceof RequestMessage)
-//            {}
-
-            if (str.equals("bye")) {
+            if (str.contains("0000")) {
                 System.out.println("Client sent bye.....EXITING");
                 break;
             }
+
+            // Storing in the pending queue
+            pendingMessagesToBeTreated.add(ot);
+
+            //TODO to close the connection
+//            if (str.contains("bye")) {
+//                System.out.println("Client sent bye.....EXITING");
+//                break;
+//            }
 
             // Clear the buffer after every message.
             receive = new byte[1024];
 
 
-            //TODO
+            //TODO to send responses
 //            Scanner sc = new Scanner(System.in);
 //            System.out.println("Please Input your inputs");
 //            String inp = sc.next().toString();
@@ -57,6 +63,11 @@ public class UdpServer extends Utility
 //            ds.send(DpSend);
 
         }
+
+
+        //TODO to process different messages
+//        Utility.processingPendingMessages(itr);
+
         ds.close();
     }
 }

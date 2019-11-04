@@ -37,7 +37,7 @@ public class UdpClient
             DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ip, 44444);
             ds.send(DpSend);
 
-            //TODO
+            //TODO to receive responses
 //            DpReceive = new DatagramPacket(bu_rec, 1024);
 //            ds.receive(DpReceive);
 //            String str = new String(DpReceive.getData(), 0, DpReceive.getLength());

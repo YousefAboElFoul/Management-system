@@ -1,22 +1,22 @@
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Date;
+import java.util.Iterator;
 
 public class Utility {
 
     @SuppressWarnings("uncheked")
-    public static <T> T parsingMesssage(String in) throws IOException {
+    public static <T> T parsingMessage(String in) throws IOException {
         // parsing
-        String[] txt = in.replaceAll(".+\\{","").split("\\||\\}");
+        String[] txt = in.replaceAll(" ","").replaceAll(".+\\{","").split("\\||\\}");
 
         switch (Integer.valueOf(txt[0])) {
             case Message.REQUEST_CODE:
                 ArrayList<String> req_list = getParticipantsStrings(txt[5]);
-                return (T) new RequestMessage(txt[1], new Date(txt[2]), txt[3], Integer.valueOf(txt[4]), req_list, txt[6]);
+                return (T) new RequestMessage(txt[1], txt[2], txt[3], Integer.valueOf(txt[4]), req_list, txt[6]);
             case Message.RESPONSE_CODE:
                 return (T) new ResponseMessage(txt[1]);
             case Message.INVITE_CODE:
-                return (T) new InviteMessage(txt[1], new Date(txt[2]), txt[3], txt[4], txt[5]);
+                return (T) new InviteMessage(txt[1], txt[2], txt[3], txt[4], txt[5]);
             case Message.ACCEPT_CODE:
                 return (T) new AcceptMessage(txt[1]);
             case Message.REJECT_CODE:
@@ -30,7 +30,7 @@ public class Utility {
                 return (T) new CancelMessageI(txt[1]);
             case Message.NOT_SCHEDULED_CODE:
                 ArrayList<String> nscheq_list = getParticipantsStrings(txt[5]);
-                return (T) new NotScheduledMessage(txt[1], new Date(txt[2]), txt[3], Integer.valueOf(txt[4]), nscheq_list, txt[6]);
+                return (T) new NotScheduledMessage(txt[1], txt[2], txt[3], Integer.valueOf(txt[4]), nscheq_list, txt[6]);
             case Message.CANCEL_2_CODE:
                 return (T) new CancelMessageII(txt[1]);
             case Message.WITHDRAW_1_CODE:
@@ -54,7 +54,6 @@ public class Utility {
 //        }
     }
 
-
     public static String getUserInput(String userInput, String ip) throws IOException{
 
         String[] ui = userInput.split(" ");
@@ -62,11 +61,11 @@ public class Utility {
         switch (Integer.parseInt(ui[0])) {
             case Message.REQUEST_CODE:
                 ArrayList<String> req_list = getParticipantsStrings(ui[5]);
-                return new RequestMessage(ip.toString() + "-" + ui[1], new Date(ui[2]), ui[3], Integer.valueOf(ui[4]), req_list, ui[6]).printReqMessage();
+                return new RequestMessage(ip.toString() + "-" + ui[1], ui[2], ui[3], Integer.valueOf(ui[4]), req_list, ui[6]).printReqMessage();
             case Message.RESPONSE_CODE:
                 return new ResponseMessage(ip.toString() + "-" + ui[1]).printRespMessage();
             case Message.INVITE_CODE:
-                return new InviteMessage(ip.toString() + "-" + ui[1], new Date(ui[2]), ui[3], ui[4], ui[5]).printInvMessage();
+                return new InviteMessage(ip.toString() + "-" + ui[1], ui[2], ui[3], ui[4], ui[5]).printInvMessage();
             case Message.ACCEPT_CODE:
                 return new AcceptMessage(ip.toString() + "-" + ui[1]).printAMessage();
             case Message.REJECT_CODE:
@@ -80,7 +79,7 @@ public class Utility {
                 return new CancelMessageI(ip.toString() + "-" + ui[1]).printCancelIMessage();
             case Message.NOT_SCHEDULED_CODE:
                 ArrayList<String> nscheq_list = getParticipantsStrings(ui[5]);
-                return new NotScheduledMessage(ip.toString() + "-" + ui[1], new Date(ui[2]), ui[3], Integer.valueOf(ui[4]), nscheq_list, ui[6]).printNotSchedMessage();
+                return new NotScheduledMessage(ip.toString() + "-" + ui[1], ui[2], ui[3], Integer.valueOf(ui[4]), nscheq_list, ui[6]).printNotSchedMessage();
             case Message.CANCEL_2_CODE:
                 return new CancelMessageII(ip.toString() + "-" + ui[1]).printCancelIIMessage();
             case Message.WITHDRAW_1_CODE:
@@ -93,12 +92,42 @@ public class Utility {
                 return new AddedMessage(ip.toString() + "-" + ui[1], ui[2]).printAddedMessage();
             case Message.ROOM_CHANGE_CODE:
                 return new RoomChangeMessage(ip.toString() + "-" + ui[1], ui[2]).printRoomChangeMessage();
+            case Message.STOP_CONNECTION:
+                return new String("0000");
             default:
                 return null;
 
         }
     }
 
+    public static void processingPendingMessages(Iterator itr) throws IOException {
+        while(itr.hasNext()) {
+            Object obj = Utility.parsingMessage(itr.next().toString());
+
+            if (obj instanceof RequestMessage) {
+                // For debugging purpose
+                // System.out.println(((RequestMessage) obj).printReqMessage());
+            }
+            else if (obj instanceof ResponseMessage) {
+                // For debugging purpose
+                // System.out.println(((AcceptMessage) obj).printAMessage());
+            }
+            else if (obj instanceof InviteMessage) {}
+            else if (obj instanceof AcceptMessage) {}
+            else if (obj instanceof RejectMessage) {}
+            else if (obj instanceof ConfirmMessage) {}
+            else if (obj instanceof ScheduledMessage) {}
+            else if (obj instanceof CancelMessageI) {}
+            else if (obj instanceof NotScheduledMessage) {}
+            else if (obj instanceof CancelMessageII) {}
+            else if (obj instanceof WithdrawMessageI) {}
+            else if (obj instanceof WithdrawMessageII) {}
+            else if (obj instanceof AddMessage) {}
+            else if (obj instanceof AddedMessage) {}
+            else if (obj instanceof RoomChangeMessage) {}
+            else {}
+        }
+    }
 
     private static ArrayList<String> getParticipantsStrings(String s) {
         ArrayList<String> mylist = new ArrayList<String>();

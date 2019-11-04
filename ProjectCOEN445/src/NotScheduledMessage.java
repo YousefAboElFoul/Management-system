@@ -4,17 +4,19 @@ import java.util.Date;
 public class NotScheduledMessage {
     final static public int NSD_CODE = Message.NOT_SCHEDULED_CODE;
     public String RQ_NUMBER;
-    public Date NSD_DATE;
-    public String  NSD_TIME;
+    public Date NSD_DATETIME;
+    public String NSD_DATE;
+    public String NSD_TIME;
     public int MIN_NUMBER_OF_PARTICIPANTS;
     public ArrayList<String> LIST_OF_CONFIRMED_PARTICIPANTS;
     public String NSD_TOPIC;
 
 
-    public NotScheduledMessage(String RQ_NUMBER, Date NSD_DATE, String NSD_TIME, int MIN_NUMBER_OF_PARTICIPANTS, ArrayList<String> LIST_OF_CONFIRMED_PARTICIPANTS, String NSD_TOPIC) {
+    public NotScheduledMessage(String RQ_NUMBER, String NSD_DATE, String NSD_TIME, int MIN_NUMBER_OF_PARTICIPANTS, ArrayList<String> LIST_OF_CONFIRMED_PARTICIPANTS, String NSD_TOPIC) {
         this.RQ_NUMBER = RQ_NUMBER;
         this.NSD_DATE = NSD_DATE;
         this.NSD_TIME = NSD_TIME;
+        setNSD_DATETIME(NSD_DATE, NSD_TIME);
         this.MIN_NUMBER_OF_PARTICIPANTS = MIN_NUMBER_OF_PARTICIPANTS;
         this.LIST_OF_CONFIRMED_PARTICIPANTS = LIST_OF_CONFIRMED_PARTICIPANTS;
         this.NSD_TOPIC = NSD_TOPIC;
@@ -32,11 +34,19 @@ public class NotScheduledMessage {
         this.RQ_NUMBER = RQ_NUMBER;
     }
 
-    public Date getNSD_DATE() {
+    public Date getNSD_DATETIME() {
+        return NSD_DATETIME;
+    }
+
+    public void setNSD_DATETIME(String NSD_DATE, String NSD_TIME) {
+        this.NSD_DATETIME = new Date(NSD_DATE + " " + NSD_TIME);
+    }
+
+    public String getNSD_DATE() {
         return NSD_DATE;
     }
 
-    public void setNSD_DATE(Date NSD_DATE) {
+    public void setNSD_DATE(String NSD_DATE) {
         this.NSD_DATE = NSD_DATE;
     }
 

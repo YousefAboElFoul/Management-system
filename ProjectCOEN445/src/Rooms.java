@@ -1,4 +1,5 @@
 import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Arrays;
 
 public class Rooms {
@@ -11,11 +12,15 @@ public class Rooms {
     // index 22 = 22-23h
     // index 23 = 23-00h
     public boolean[] ROOM_ONE_STATE = new boolean[24];
+    public String[] ROOM_ONE_OCCUPANT = new String[24];
     public boolean[] ROOM_TWO_STATE = new boolean[24];
+    public String[] ROOM_TWO_OCCUPANT = new String[24];
 
     public Rooms() {
         Arrays.fill(ROOM_ONE_STATE, true);
         Arrays.fill(ROOM_TWO_STATE, true);
+        Arrays.fill(ROOM_ONE_OCCUPANT, null);
+        Arrays.fill(ROOM_TWO_OCCUPANT, null);
     }
 
 
@@ -41,5 +46,21 @@ public class Rooms {
 
     public void setROOM_TWO_STATE(boolean[] ROOM_TWO_STATE) {
         this.ROOM_TWO_STATE = ROOM_TWO_STATE;
+    }
+
+    public String[] getROOM_ONE_OCCUPANT() {
+        return ROOM_ONE_OCCUPANT;
+    }
+
+    public void setROOM_ONE_OCCUPANT(String[] ROOM_ONE_OCCUPANT) {
+        this.ROOM_ONE_OCCUPANT = ROOM_ONE_OCCUPANT;
+    }
+
+    public String[] getROOM_TWO_OCCUPANT() {
+        return ROOM_TWO_OCCUPANT;
+    }
+
+    public void setROOM_TWO_OCCUPANT(String[] ROOM_TWO_OCCUPANT) {
+        this.ROOM_TWO_OCCUPANT = ROOM_TWO_OCCUPANT;
     }
 }

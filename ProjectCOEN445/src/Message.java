@@ -16,6 +16,8 @@ public class Message {
     final static public int ADDED_CODE = 8881;
     final static public int ROOM_CHANGE_CODE = 9999;
 
+    final static public int STOP_CONNECTION = 0000;
+
     final static public String UNAVAILABLE_MSG = "UNAVAILABLE";
     final static public String CANCEL_REASON_MSG = "Number of participants is lower than minimum required";
 

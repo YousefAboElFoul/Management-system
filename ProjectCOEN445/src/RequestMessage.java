@@ -5,17 +5,19 @@ public class RequestMessage {
 
     final static public int RQ_CODE = Message.REQUEST_CODE;
     public String RQ_NUMBER = null ;
-    public Date RQ_DATE;
-    public String  RQ_TIME;
+    public Date RQ_DATETIME;
+    public String RQ_DATE;
+    public String RQ_TIME;
     public int MIN_NUMBER_OF_PARTICIPANTS;
     public ArrayList <String>LIST_OF_PARTICIPANTS;
     public String RQ_TOPIC;
 
 
-    public RequestMessage(String RQ_NUMBER, Date RQ_DATE, String RQ_TIME, int MIN_NUMBER_OF_PARTICIPANTS, ArrayList<String> LIST_OF_PARTICIPANTS, String RQ_TOPIC) {
+    public RequestMessage(String RQ_NUMBER, String RQ_DATE, String RQ_TIME, int MIN_NUMBER_OF_PARTICIPANTS, ArrayList<String> LIST_OF_PARTICIPANTS, String RQ_TOPIC) {
         this.RQ_NUMBER = RQ_NUMBER;
         this.RQ_DATE = RQ_DATE;
         this.RQ_TIME = RQ_TIME;
+        setRQ_DATETIME(RQ_DATE, RQ_TIME);
         this.MIN_NUMBER_OF_PARTICIPANTS = MIN_NUMBER_OF_PARTICIPANTS;
         this.LIST_OF_PARTICIPANTS = LIST_OF_PARTICIPANTS;
         this.RQ_TOPIC = RQ_TOPIC;
@@ -25,12 +27,20 @@ public class RequestMessage {
         return RQ_CODE;
     }
 
-    public Date getRQ_DATE() {
+    public Date getRQ_DATETIME() {
+        return RQ_DATETIME;
+    }
+
+    public void setRQ_DATETIME(String RQ_DATE, String RQ_TIME) {
+        this.RQ_DATETIME = new Date(RQ_DATE + " " + RQ_TIME);
+    }
+
+    public String getRQ_DATE() {
         return RQ_DATE;
     }
 
-    public void setRQ_DATE(Date RQ_DATE) {
-        this.RQ_DATE = RQ_DATE;
+    public void setRQ_DATE(String DATE) {
+        this.RQ_DATE = DATE;
     }
 
     public String getRQ_TIME() {
