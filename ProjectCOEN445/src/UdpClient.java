@@ -10,11 +10,12 @@ public class UdpClient
 {
 
 
-    public static void main(String args[]) throws IOException
+    public static void main(String args[]) throws Exception
     {
         // Sending Configuration
         DatagramSocket ds = new DatagramSocket(44445);
         InetAddress ip = InetAddress.getByName("127.0.0.1");
+        String inp = null;
         byte buf[] = null;
 
         // Receiving Configuration
@@ -29,9 +30,11 @@ public class UdpClient
             System.out.println("Please Input your inputs");
 
             // send the user's input
-            String inp = Utility.getUserInput(sc.nextLine(), ip.toString());
-
+            while (Utility.getUserInput(sc.nextLine(), ip.toString()) == "Invalid Message") {
+                inp = Utility.getUserInput(sc.nextLine(), ip.toString());
+            }
             // convert the String input into the byte array.
+
             buf = inp.getBytes();
 
             DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ip, 44444);

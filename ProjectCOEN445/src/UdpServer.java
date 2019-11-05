@@ -6,11 +6,20 @@ import java.util.Iterator;
 import java.util.PriorityQueue;
 import java.util.Queue;
 import java.io.*;
+import java.sql.Connection;
+import java.sql.DriverManager;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.util.Properties;
+import java.util.Scanner;
+
 
 public class UdpServer extends Utility
 {
 
     public static void main(String[] args) throws IOException {
+
+        establishDBConnection();
 
         System.out.println("Starting UDP SERVER");
         DatagramSocket ds = new DatagramSocket(44444);
@@ -69,5 +78,34 @@ public class UdpServer extends Utility
 //        Utility.processingPendingMessages(itr);
 
         ds.close();
+    }
+
+    private static void establishDBConnection() {
+        System.out.println("Trying to Establish Database Connection.....");
+        Connection conn3 = null;
+
+        try {
+            // Connect method
+            String dbURL3 = "jdbc:postgresql://ec2-54-235-92-244.compute-1.amazonaws.com:5432/d70m64dg1qc8fu?sslmode=require";
+            Properties parameters = new Properties();
+            parameters.put("user", "gkcmczoxettaer");
+            parameters.put("password", "8d4b50fd5a522fd0256536f4f6993a61fad200dde8d58372c1200b5e63cfe694");
+
+            conn3 = DriverManager.getConnection(dbURL3, parameters);
+            if (conn3 != null) {
+                System.out.println("Connected to database #3");
+            }
+
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        } finally {
+            try {
+                if (conn3 != null && !conn3.isClosed()) {
+                    conn3.close();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+        }
     }
 }

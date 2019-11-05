@@ -34,8 +34,3 @@ MESSAGES RECEIVED BY THE CLIENT | (*) = to the Organizer
 - WithdrawI(*)
 - Added(*)
 - Room_Change (to everyone)
-
-
-ROOM
-****
-- If the state is True, it means it is "free", otherwise "false".
