@@ -32,27 +32,28 @@ public class UdpClient
             // send the user's input
             while (Utility.getUserInput(sc.nextLine(), ip.toString()) == "Invalid Message") {
                 inp = Utility.getUserInput(sc.nextLine(), ip.toString());
-            }
-            // convert the String input into the byte array.
+                // convert the String input into the byte array.
 
-            buf = inp.getBytes();
 
-            DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ip, 44444);
-            ds.send(DpSend);
+                buf = inp.getBytes();
 
-            //TODO to receive responses
+                DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ip, 44444);
+                ds.send(DpSend);
+
+                //TODO to receive responses
 //            DpReceive = new DatagramPacket(bu_rec, 1024);
 //            ds.receive(DpReceive);
 //            String str = new String(DpReceive.getData(), 0, DpReceive.getLength());
 //            System.out.println("Server:-" + str);
 
-            // break the loop if user enters "bye"
-            if (inp.equals("bye"))
-                break;
-
+                // break the loop if user enters "bye"
+                if (inp.equals("bye"))
+                    break;
+                ds.close();
+            }
 //            bu_rec = new byte[1024];
         }
-         ds.close();
+
     }
 }
 

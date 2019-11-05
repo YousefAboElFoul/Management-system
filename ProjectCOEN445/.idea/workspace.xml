@@ -2,25 +2,19 @@
 <project version="4">
   <component name="ChangeListManager">
     <list default="true" id="f19721d6-fdfe-4bf0-b9b8-035f5e58ce94" name="Default Changelist" comment="">
-      <change afterPath="$PROJECT_DIR$/.idea/libraries/postgresql_9_4_1207_jre6.xml" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/META-INF/ProjectCOEN445.kotlin_module" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/RoomsUtility.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/Utility.class" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/scratch.txt" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/DatabaseTables.sql" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/resources/application.properties" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/ProjectCOEN445.iml" beforeDir="false" afterPath="$PROJECT_DIR$/ProjectCOEN445.iml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ProjectCOEN445/ResponseMessage.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/ResponseMessage.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ProjectCOEN445/InviteMessage.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/InviteMessage.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ProjectCOEN445/Message.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/Message.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ProjectCOEN445/NotScheduledMessage.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/NotScheduledMessage.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ProjectCOEN445/RequestMessage.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/RequestMessage.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/ProjectCOEN445/Rooms.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/Rooms.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/out/production/ProjectCOEN445/SQLite.class" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ProjectCOEN445/RoomsUtility.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/RoomsUtility.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/ProjectCOEN445/UdpClient.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/UdpClient.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/ProjectCOEN445/UdpServer.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/UdpServer.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ProjectCOEN445/Utility.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/Utility.class" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/out/production/ProjectCOEN445/scratch.txt" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/scratch.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/out/production/ProjectCOEN445/test.class" beforeDir="false" afterPath="$PROJECT_DIR$/out/production/ProjectCOEN445/test.class" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/UdpClient.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/UdpClient.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/UdpServer.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/UdpServer.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/Utility.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/Utility.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/scratch.txt" beforeDir="false" afterPath="$PROJECT_DIR$/src/scratch.txt" afterDir="false" />
     </list>
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
     <option name="SHOW_DIALOG" value="false" />
@@ -62,7 +56,7 @@
       </list>
     </option>
   </component>
-  <component name="RunManager" selected="Application.UdpServer">
+  <component name="RunManager" selected="Application.UdpClient">
     <configuration name="UdpClient" type="Application" factoryName="Application" temporary="true" nameIsGenerated="true">
       <option name="MAIN_CLASS_NAME" value="UdpClient" />
       <module name="ProjectCOEN445" />
@@ -79,8 +73,8 @@
     </configuration>
     <recent_temporary>
       <list>
-        <item itemvalue="Application.UdpServer" />
         <item itemvalue="Application.UdpClient" />
+        <item itemvalue="Application.UdpServer" />
       </list>
     </recent_temporary>
   </component>
@@ -117,6 +111,104 @@
           <url>file://$PROJECT_DIR$/src/UdpClient.java</url>
           <line>32</line>
           <option name="timeStamp" value="1" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/out/production/ProjectCOEN445/UdpClient.class</url>
+          <line>26</line>
+          <option name="timeStamp" value="4" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/UdpClient.java</url>
+          <line>33</line>
+          <option name="timeStamp" value="6" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/Utility.java</url>
+          <line>76</line>
+          <option name="timeStamp" value="8" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/Utility.java</url>
+          <line>77</line>
+          <option name="timeStamp" value="9" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/Utility.java</url>
+          <line>78</line>
+          <option name="timeStamp" value="10" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/Utility.java</url>
+          <line>79</line>
+          <option name="timeStamp" value="11" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/Utility.java</url>
+          <line>80</line>
+          <option name="timeStamp" value="12" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/Utility.java</url>
+          <line>81</line>
+          <option name="timeStamp" value="13" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/Utility.java</url>
+          <line>82</line>
+          <option name="timeStamp" value="14" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/Utility.java</url>
+          <line>83</line>
+          <option name="timeStamp" value="15" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/Utility.java</url>
+          <line>84</line>
+          <option name="timeStamp" value="16" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/Utility.java</url>
+          <line>85</line>
+          <option name="timeStamp" value="17" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/Utility.java</url>
+          <line>86</line>
+          <option name="timeStamp" value="18" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/Utility.java</url>
+          <line>92</line>
+          <option name="timeStamp" value="22" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/Utility.java</url>
+          <line>93</line>
+          <option name="timeStamp" value="23" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/Utility.java</url>
+          <line>94</line>
+          <option name="timeStamp" value="24" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/Utility.java</url>
+          <line>95</line>
+          <option name="timeStamp" value="25" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-line">
+          <url>file://$PROJECT_DIR$/src/Utility.java</url>
+          <line>96</line>
+          <option name="timeStamp" value="26" />
+        </line-breakpoint>
+        <line-breakpoint enabled="true" type="java-method">
+          <url>file://$PROJECT_DIR$/src/Utility.java</url>
+          <line>90</line>
+          <properties class="Utility" method="switchMessages">
+            <option name="EMULATED" value="true" />
+          </properties>
+          <option name="timeStamp" value="20" />
         </line-breakpoint>
       </breakpoints>
     </breakpoint-manager>
