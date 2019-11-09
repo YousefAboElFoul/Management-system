@@ -17,7 +17,7 @@ import java.util.Scanner;
 public class UdpServer extends Utility
 {
 
-    public static void main(String[] args) throws IOException {
+    public static void main(String[] args) throws IOException, SQLException {
 
         establishDBConnection();
 
@@ -40,7 +40,7 @@ public class UdpServer extends Utility
             String str = new String(DpReceive.getData(), 0, DpReceive.getLength());
             String st = DpReceive.getSocketAddress().toString();
             String ot = "Client-" + st +":-" + str;
-
+            parsingMessage(ot);
             System.out.println(ot);
 
             if (str.contains("0000")) {
@@ -108,4 +108,5 @@ public class UdpServer extends Utility
             }
         }
     }
+
 }

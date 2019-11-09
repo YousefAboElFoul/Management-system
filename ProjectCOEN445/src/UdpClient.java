@@ -28,15 +28,10 @@ public class UdpClient
         {
             Scanner sc = new Scanner(System.in);
             System.out.println("Please Input your inputs");
-
+            inp = Utility.getUserInput(sc.nextLine(), ip.toString()); // convert the String input into the byte array.
             // send the user's input
-            while (Utility.getUserInput(sc.nextLine(), ip.toString()) == "Invalid Message") {
-                inp = Utility.getUserInput(sc.nextLine(), ip.toString());
-                // convert the String input into the byte array.
-
-
+            while (inp != "Invalid Message") {
                 buf = inp.getBytes();
-
                 DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ip, 44444);
                 ds.send(DpSend);
 
@@ -46,6 +41,7 @@ public class UdpClient
 //            String str = new String(DpReceive.getData(), 0, DpReceive.getLength());
 //            System.out.println("Server:-" + str);
 
+                inp = Utility.getUserInput(sc.nextLine(), ip.toString()); // convert the String input into the byte array.
                 // break the loop if user enters "bye"
                 if (inp.equals("bye"))
                     break;
