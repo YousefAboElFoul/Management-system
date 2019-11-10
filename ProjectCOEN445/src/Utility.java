@@ -30,7 +30,6 @@ public class Utility {
             switch (mCode) {
                 case Message.REQUEST_CODE:
                     ArrayList<String> req_list = getParticipantsStrings(txt[5]);
-//                    String rq_num[] = txt[1].split("-");
                     messageReceived = (T) new RequestMessage(txt[1], txt[2], txt[3], Integer.valueOf(txt[4]), req_list, txt[6]);
 
                     // the mysql insert statement
@@ -45,11 +44,10 @@ public class Utility {
                             + " VALUES (?)";
                     break;
                 case Message.INVITE_CODE:
-//                    String mt_num[] = txt[1].split("-");
                     messageReceived = (T) new InviteMessage(txt[1], txt[2], txt[3], txt[4], txt[5]);
 
                     // the mysql insert statement
-                    query = "INSERT INTO InviteMessage(MEETINGNUMBER, DATEINSERTED, TIME, TOPIC, REQUESTER)"
+                    query = "INSERT INTO InviteMessage(MEETINGNUMBER, DATEINSERTED, MEETINGTIME, TOPIC, REQUESTER)"
                             + " VALUES (?, ?, ?, ?, ?)";
                     break;
                 case Message.ACCEPT_CODE:
@@ -93,7 +91,7 @@ public class Utility {
                     messageReceived = (T) new NotScheduledMessage(txt[1], txt[2], txt[3], Integer.valueOf(txt[4]), nscheq_list, txt[6]);
 
                     // the mysql insert statement
-                    query = "INSERT INTO NotScheduledMessage(REQUESTNUMBER, DATEINSERTED, TIME, MINIMUM, LISTOFCONFIRMEDPARTICIPANTS, TOPIC)"
+                    query = "INSERT INTO NotScheduledMessage(REQUESTNUMBER, DATEINSERTED, PROPOSEDTIME, MINIMUM, LISTOFCONFIRMEDPARTICIPANTS, TOPIC)"
                             + " VALUES (?, ?, ?, ?, ?, ?)";
                     break;
                 case Message.CANCEL_2_CODE:
@@ -372,7 +370,7 @@ public class Utility {
     }
 
     //TODO complete the logic
-    public static void processingPendingMessages (Iterator itr) throws IOException {
+    public static String processingPendingMessages (Iterator itr, String server, String requester) throws IOException, ParseException {
         while (itr.hasNext()) {
             Object obj = null;
             try {
@@ -385,6 +383,31 @@ public class Utility {
             if (obj instanceof RequestMessage) {
                 // For debugging purpose
                 // System.out.println(((RequestMessage) obj).printReqMessage());
+
+                // Create a temporary invitation ready to be used/sent
+                InviteMessage newInvite = new InviteMessage(server, ((RequestMessage) obj).getRQ_DATE(),
+                        ((RequestMessage) obj).getRQ_TIME(), ((RequestMessage) obj).getRQ_TOPIC(), requester);
+
+                // Check is the room is available&reserved
+                boolean isReserved = RoomsUtility.reserveRoom(((RequestMessage) obj).getRQ_DATE(),
+                        ((RequestMessage) obj).getRQ_TIME(), newInvite.getMT_NUMBER());
+
+                if (isReserved) {
+                    // if reservation was not successful return Response Message
+                    return newInvite.printInvMessage();
+
+                    //TODO to be continued, make sure the remaining logic is implemented
+                    //Check if the minimum number of participants have accepted.
+                    //If yes then confirm.
+                }
+                else {
+                    // if reservation was not successful return Response Message
+                    return new ResponseMessage(((RequestMessage) obj).getRQ_NUMBER()).printRespMessage();
+                }
+
+
+
+
             } else if (obj instanceof ResponseMessage) {
                 // For debugging purpose
                 // System.out.println(((AcceptMessage) obj).printAMessage());
@@ -404,6 +427,7 @@ public class Utility {
             } else {
             }
         }
+        return null;
     }
 
 }

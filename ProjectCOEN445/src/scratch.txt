@@ -4,6 +4,7 @@ Assumptions
 - Date format = MM/DD/YYYY
 - Can only book hour, since time slots are split per hour
 - One client per computer
+- We are dependent on the database for state saving and logging(Check with the prof)
 
 
 Input format for "CLIENT" sending messages
