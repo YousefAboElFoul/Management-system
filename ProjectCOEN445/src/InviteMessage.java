@@ -10,8 +10,19 @@ public class InviteMessage {
     public String IV_TOPIC;
     public String IV_REQUESTER;
 
-    public InviteMessage(String MT_NUMBER, String IV_DATE, String IV_TIME, String IV_TOPIC, String IV_REQUESTER) {
-        this.MT_NUMBER = MT_NUMBER;
+    // Since we have to auto increment the meeting number
+    private static int curr_mt_num = 0;
+
+    public InviteMessage(String in, String IV_DATE, String IV_TIME, String IV_TOPIC, String IV_REQUESTER) {
+        if (in.contains("-")) {
+            // use this notation on the server side
+            this.MT_NUMBER = in;
+        }
+        else {
+            // use this notation on the client side
+            curr_mt_num++;
+            this.MT_NUMBER = in + "-" + curr_mt_num;
+        }
         this.IV_DATE = IV_DATE;
         this.IV_TIME = IV_TIME;
         setIV_DATETIME(IV_DATE, IV_TIME);

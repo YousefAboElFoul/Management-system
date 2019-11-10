@@ -2,21 +2,16 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.Iterator;
-import java.util.PriorityQueue;
-import java.util.Queue;
-import java.io.*;
 import java.sql.Connection;
 import java.sql.DriverManager;
-import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.PriorityQueue;
 import java.util.Properties;
-import java.util.Scanner;
 
 
 public class UdpServer extends Utility
 {
-
     public static void main(String[] args) throws IOException, SQLException {
 
         establishDBConnection();
@@ -38,9 +33,9 @@ public class UdpServer extends Utility
             DpReceive = new DatagramPacket(receive, 1024);
             ds.receive(DpReceive);
             String str = new String(DpReceive.getData(), 0, DpReceive.getLength());
-            String st = DpReceive.getSocketAddress().toString();
-            String ot = "Client-" + st +":-" + str;
-            parsingMessage(ot);
+            String from = DpReceive.getSocketAddress().toString();
+            String ot = "Client-" + from +":-" + str;
+            System.out.println(parsingMessage(ot, from).toString());
             System.out.println(ot);
 
             if (str.contains("0000")) {
@@ -86,10 +81,10 @@ public class UdpServer extends Utility
 
         try {
             // Connect method
-            String dbURL3 = "jdbc:postgresql://ec2-54-235-92-244.compute-1.amazonaws.com:5432/d70m64dg1qc8fu?sslmode=require";
+            String dbURL3 = Utility.url;
             Properties parameters = new Properties();
-            parameters.put("user", "gkcmczoxettaer");
-            parameters.put("password", "8d4b50fd5a522fd0256536f4f6993a61fad200dde8d58372c1200b5e63cfe694");
+            parameters.put("user", Utility.user);
+            parameters.put("password", Utility.password);
 
             conn3 = DriverManager.getConnection(dbURL3, parameters);
             if (conn3 != null) {

@@ -41,12 +41,13 @@ public class UdpClient
 //            String str = new String(DpReceive.getData(), 0, DpReceive.getLength());
 //            System.out.println("Server:-" + str);
 
+                System.out.println("Please Input your inputs");
                 inp = Utility.getUserInput(sc.nextLine(), ip.toString()); // convert the String input into the byte array.
                 // break the loop if user enters "bye"
                 if (inp.equals("bye"))
                     break;
-                ds.close();
             }
+            ds.close();
 //            bu_rec = new byte[1024];
         }
 
