@@ -8,6 +8,7 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.PriorityQueue;
 import java.util.Properties;
+import java.util.Scanner;
 
 
 public class UdpServer extends Utility
@@ -18,9 +19,14 @@ public class UdpServer extends Utility
 
         // Configuration
         System.out.println("Starting UDP SERVER");
-        DatagramSocket ds = new DatagramSocket(44446);
-        InetAddress ipS = InetAddress.getByName("127.0.0.1");
-
+        Scanner myObj = new Scanner(System.in);
+        System.out.println("PLease enter the port on which you'd like to server the server");
+        String Port = myObj.nextLine();
+        System.out.println("PLease enter the IP address of the server");
+        String IpAddress = myObj.nextLine();
+        DatagramSocket ds = new DatagramSocket(Integer.parseInt(Port));
+        InetAddress ipS = InetAddress.getByName(IpAddress);
+        System.out.println("UDP Server Started");
 
         // Queue that holds all the pending messages
         PriorityQueue <String> pendingMessagesToBeTreated = new PriorityQueue<>();

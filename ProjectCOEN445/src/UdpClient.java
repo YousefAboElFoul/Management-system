@@ -9,8 +9,16 @@ public class UdpClient
     {
         // Configuration
         System.out.println("Starting UDP CLIENT");
-        DatagramSocket ds = new DatagramSocket(44447);
-        InetAddress ip = InetAddress.getByName("127.0.0.1");
+        Scanner myObj = new Scanner(System.in);
+        System.out.println("PLease enter the port on which you'd like to server the client");
+        String Port = myObj.nextLine();
+        System.out.println("PLease enter the IP address of the client");
+        String IpAddress = myObj.nextLine();
+        DatagramSocket ds = new DatagramSocket(Integer.parseInt(Port));
+        InetAddress ip = InetAddress.getByName(IpAddress);
+        System.out.println("UDP Client Started");
+        // DatagramSocket ds = new DatagramSocket(44447);
+        //InetAddress ip = InetAddress.getByName("127.0.0.1");
 
         Thread sendingTC = new Thread( new Runnable() {
             @Override
