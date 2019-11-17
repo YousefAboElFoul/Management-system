@@ -35,7 +35,6 @@ public class RoomsUtility {
 
                 while (res.next()) {
                     result += res.getString(1) + ",";
-                    System.out.println(res.getString(1));
                 }
 
                 if (!result.contains(ROOM_ONE)) {

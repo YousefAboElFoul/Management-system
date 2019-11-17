@@ -1,86 +1,82 @@
-import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.util.ArrayList;
-import java.util.Date;
 import java.util.Scanner;
 
 public class UdpClient
 {
     public static void main(String args[]) throws Exception
     {
-        // Sending Configuration
-        DatagramSocket ds = new DatagramSocket(44445);
+        // Configuration
+        System.out.println("Starting UDP CLIENT");
+        DatagramSocket ds = new DatagramSocket(44447);
         InetAddress ip = InetAddress.getByName("127.0.0.1");
 
-        Thread sendingTC = new Thread(
-                new Runnable() {
-                    @Override
-                    public void run() {
+        Thread sendingTC = new Thread( new Runnable() {
+            @Override
+            public void run() {
 
-                        while (true) {
-                            // Sending Configuration
-                            String inp = null;
-                            byte buf[] = null;
+                while (true) {
+                    // Sending Configuration
+                    String inp = null;
+                    byte buf[] = null;
 
-                            Scanner sc = new Scanner(System.in);
+                    Scanner sc = new Scanner(System.in);
+                    System.out.println("Please Input your inputs");
+
+                    try {
+                        inp = Utility.getUserInput(sc.nextLine(), ip.toString()); // convert the String input into the byte array.
+                        // send the user's input
+                        while (!inp.equals("Invalid Message")) {
+                            buf = inp.getBytes();
+                            DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ip, 44446);
+                            ds.send(DpSend);
+
                             System.out.println("Please Input your inputs");
-
-                            try {
-                                inp = Utility.getUserInput(sc.nextLine(), ip.toString()); // convert the String input into the byte array.
-                                // send the user's input
-                                while (!inp.equals("Invalid Message")) {
-                                    buf = inp.getBytes();
-                                    DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ip, 44444);
-                                    ds.send(DpSend);
-
-                                    System.out.println("Please Input your inputs");
-                                    inp = Utility.getUserInput(sc.nextLine(), ip.toString()); // convert the String input into the byte array.
-                                    // break the loop if user enters "bye"
-                                    if (inp.equals("bye"))
-                                        break;
-                                }
-
-                                Thread.sleep(1000);
-
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                            inp = Utility.getUserInput(sc.nextLine(), ip.toString()); // convert the String input into the byte array.
+                            // break the loop if user enters "bye"
+                            if (inp.equals("bye"))
+                                break;
                         }
 
+                        Thread.sleep(1000);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                });
+                }
 
-        Thread receivingTC = new Thread(
-                new Runnable() {
-                    @Override
-                    public void run() {
+            }
+        });
 
-                        while (true) {
+        Thread receivingTC = new Thread( new Runnable() {
+            @Override
+            public void run() {
 
-                            // Receiving Configuration
-                            byte bu_rec[] = new byte[1024];
-                            DatagramPacket DpReceive = null;
+                while (true) {
 
-                            try {
-                                System.out.println("See Input");
-                                // received from the sever
-                                DpReceive = new DatagramPacket(bu_rec, 1024);
-                                ds.receive(DpReceive);
-                                if (DpReceive != null) {
-                                    String strR = new String(DpReceive.getData(), 0, DpReceive.getLength());
-                                    System.out.println("Server:-" + strR);
-                                }
+                    // Receiving Configuration
+                    byte bu_rec[] = new byte[1024];
+                    DatagramPacket DpReceive = null;
 
-                                Thread.sleep(1000);
-
-                            } catch (Exception e) {
-                                e.printStackTrace();
-                            }
+                    try {
+                        System.out.println("See Input");
+                        // received from the sever
+                        DpReceive = new DatagramPacket(bu_rec, 1024);
+                        ds.receive(DpReceive);
+                        if (DpReceive != null) {
+                            String strR = new String(DpReceive.getData(), 0, DpReceive.getLength());
+                            System.out.println("Server:-" + strR);
                         }
+
+                        Thread.sleep(1000);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
                     }
-                });
+                }
+            }
+        });
 
         sendingTC.start();
         receivingTC.start();

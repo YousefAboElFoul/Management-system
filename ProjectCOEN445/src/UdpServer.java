@@ -8,7 +8,6 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.PriorityQueue;
 import java.util.Properties;
-import java.util.Scanner;
 
 
 public class UdpServer extends Utility
@@ -17,96 +16,99 @@ public class UdpServer extends Utility
 
         establishDBConnection();
 
-        //receiving conf
+        // Configuration
         System.out.println("Starting UDP SERVER");
-        DatagramSocket ds = new DatagramSocket(44444);
-
-
-        //Sending conf
+        DatagramSocket ds = new DatagramSocket(44446);
         InetAddress ipS = InetAddress.getByName("127.0.0.1");
-        byte buf_s[] = null;
 
 
         // Queue that holds all the pending messages
         PriorityQueue <String> pendingMessagesToBeTreated = new PriorityQueue<>();
 
-        Thread receivingTS = new Thread(
-                new Runnable() {
-                    @Override
-                    public void run() {
+        Thread receivingTS = new Thread( new Runnable() {
+            @Override
+            public void run() {
 
-                        while (true)
-                        {
-                            // Receiving Configuration
-                            byte bu_rec[] = new byte[1024];
-                            DatagramPacket DpReceive = null;
+                while (true)
+                {
+                    // Receiving Configuration
+                    byte bu_rec[] = new byte[1024];
+                    DatagramPacket DpReceive = null;
 
-                            try {
-                                // received from the client
-                                DpReceive = new DatagramPacket(bu_rec, 1024);
-                                ds.receive(DpReceive);
+                    try {
+                        // received from the client
+                        DpReceive = new DatagramPacket(bu_rec, 1024);
+                        ds.receive(DpReceive);
 
-                                if (DpReceive != null) {
-                                    String str = new String(DpReceive.getData(), 0, DpReceive.getLength());
-                                    String from = DpReceive.getSocketAddress().toString();
-                                    String ot = "Client-" + from + ":-" + str;
-                                    System.out.println(parsingMessage(ot, from).toString());
-                                    System.out.println(ot);
+                        if (DpReceive != null) {
+                            String str = new String(DpReceive.getData(), 0, DpReceive.getLength());
+                            String from = DpReceive.getSocketAddress().toString();
+                            String ot = "Client-" + from + ":-" + str;
 
-                                    // Storing in the pending queue
-                                    pendingMessagesToBeTreated.add(ot);
+                            // For debugging purposes
+                            System.out.println(parsingMessage(ot, from).toString());
 
+                            System.out.println(ot);
+
+                            // Storing in the pending queue
+                            pendingMessagesToBeTreated.add(ot + "#" + from);
+                        }
+
+                        Thread.sleep(1000);
+
+                    } catch (Exception e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        });
+
+        Thread sendingTS = new Thread( new Runnable() {
+            @Override
+            public void run() {
+                while(true) {
+                    Iterator itr = pendingMessagesToBeTreated.iterator();
+
+                    // Sending Configuration
+                    String inp = null;
+                    byte buf_s[] = new byte[1024];
+
+                    while (itr.hasNext()) {
+                        try {
+                            Object currObj = itr.next();
+
+                            // get the message and who sent it
+                            String []currMsg = currObj.toString().split("#");
+
+                            // process the message
+                            inp = Utility.processingServer(currMsg[0], ipS.toString(), currMsg[1]); // convert the String input into the byte array.
+
+                            // send the user's input
+                            System.out.println("Please Input your inputs");
+                            if (inp != null) {
+                                if (!inp.equals("Invalid Message")) {
+                                    buf_s = inp.getBytes();
+
+                                    DatagramPacket DpSend = new DatagramPacket(buf_s, buf_s.length, ipS, 44447);
+                                    ds.send(DpSend);
+                                    pendingMessagesToBeTreated.remove(currObj);
+                                    if (inp.equals("bye"))
+                                        break;
                                 }
-                                bu_rec = new byte[1024];
-
-                                Thread.sleep(1000);
-
-                            } catch (Exception e) {
-                                e.printStackTrace();
                             }
+                        } catch (Exception e) {
+                            e.printStackTrace();
                         }
                     }
-                });
 
-        Thread sendingTS = new Thread(
-                new Runnable() {
-                    @Override
-                    public void run() {
-                        while(true) {
-                            Iterator itr = pendingMessagesToBeTreated.iterator();
-                            // Sending Configuration
-                            String inp = null;
-                            byte buf_s[] = new byte[1024];
-                            while (itr.hasNext()) {
-                                try {
-                                    Object currMsg = itr.next();
-                                    inp = Utility.processingServer(currMsg, ipS.toString(), null); // convert the String input into the byte array.
-                                    // send the user's input
-                                    System.out.println("Please Input your inputs");
-                                    if (inp != null) {
-                                        if (!inp.equals("Invalid Message")) {
-                                            buf_s = inp.getBytes();
-
-                                            DatagramPacket DpSend = new DatagramPacket(buf_s, buf_s.length, ipS, 44445);
-                                            ds.send(DpSend);
-                                            pendingMessagesToBeTreated.remove(currMsg);
-                                            if (inp.equals("bye"))
-                                                break;
-                                        }
-                                    }
-                                } catch (Exception e) {
-                                    e.printStackTrace();
-                                }
-                            }
-
-                            try {
-                                Thread.sleep(3000);
-                            }catch (InterruptedException e) {
-                                System.out.println(e + "Interrupted");
-                            }
-                        }
+                    try {
+                        Thread.sleep(3000);
+                    }catch (InterruptedException e) {
+                        System.out.println(e + "Interrupted");
                     }
-                });
+                }
+            }
+        });
 
 //        while (true) {
         receivingTS.start();

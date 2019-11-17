@@ -4,7 +4,6 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.logging.Logger;
 
 public class Utility {
@@ -38,17 +37,9 @@ public class Utility {
                     break;
                 case Message.RESPONSE_CODE:
                     messageReceived = (T) new ResponseMessage(txt[1]);
-
-                    // the mysql insert statement
-                    query = "INSERT INTO ResponseMessage(REQUESTNUMBER)"
-                            + " VALUES (?)";
                     break;
                 case Message.INVITE_CODE:
                     messageReceived = (T) new InviteMessage(txt[1], txt[2], txt[3], txt[4], txt[5]);
-
-                    // the mysql insert statement
-                    query = "INSERT INTO InviteMessage(MEETINGNUMBER, DATEINSERTED, MEETINGTIME, TOPIC, REQUESTER)"
-                            + " VALUES (?, ?, ?, ?, ?)";
                     break;
                 case Message.ACCEPT_CODE:
                     messageReceived = (T) new AcceptMessage(txt[1]);
@@ -138,23 +129,20 @@ public class Utility {
             }
         } catch (Exception e) {
             e.getMessage();
+            return (T) "Error occurred in the request message";
         }
 
         // For db-insertion
         if (query != null) {
             if (mCode == Message.ADDED_CODE)
                 updateMessage(query, mCode, messageReceived, from);
-            else if (mCode != Message.ADDED_CODE)
+            else if (mCode != Message.ADDED_CODE || mCode != Message.INVITE_CODE
+                    || mCode != Message.RESPONSE_CODE)
                 insertMessage(query, mCode, messageReceived, from);
         }
 
         return (messageReceived != null) ? (T) messageReceived : (T) "Error occurred in the request message";
 
-        //For debugging
-//        for (String i:wordArray) {
-//            if (i != "{")
-//            System.out.println(i);
-//        }
     }
 
     /* This for connecting to db */
@@ -370,20 +358,17 @@ public class Utility {
     }
 
     //TODO complete the logic
-    public static String processingServer (Object o, String server, String requester) throws IOException, ParseException {
+    public static String processingServer (String o, String server, String requester) throws IOException, ParseException {
         Object obj = null;
+
         try {
-            // TODO check
-            obj = Utility.parsingMessage(o.toString(),null);
+            obj = Utility.parsingMessage(o, requester);
         } catch (SQLException e) {
             e.printStackTrace();
         }
 
         if (obj instanceof RequestMessage) {
-            // For debugging purpose
-            // System.out.println(((RequestMessage) obj).printReqMessage());
-
-            // Create a temporary invitation ready to be used/sent
+            // Create a temporary invitation ready to be used/sent in case reservation is successful
             InviteMessage newInvite = new InviteMessage(server, ((RequestMessage) obj).getRQ_DATE(),
                     ((RequestMessage) obj).getRQ_TIME(), ((RequestMessage) obj).getRQ_TOPIC(), requester);
 
@@ -392,7 +377,12 @@ public class Utility {
                     ((RequestMessage) obj).getRQ_TIME(), newInvite.getMT_NUMBER());
 
             if (isReserved) {
-                // if reservation was not successful return Response Message
+                // the mysql insert statement
+                String query = "INSERT INTO InviteMessage(MEETINGNUMBER, DATEINSERTED, MEETINGTIME, TOPIC, REQUESTER)"
+                        + " VALUES (?, ?, ?, ?, ?)";
+                insertMessage(query, Message.INVITE_CODE, newInvite, null);
+
+                // if reservation was successful return Invite Message
                 return newInvite.printInvMessage();
 
                 //TODO to be continued, make sure the remaining logic is implemented
@@ -400,14 +390,20 @@ public class Utility {
                 //If yes then confirm.
             }
             else {
+                // Create a response message
+                ResponseMessage newResponse = new ResponseMessage(((RequestMessage) obj).getRQ_NUMBER());
+
+                // the mysql insert statement
+                String query = "INSERT INTO ResponseMessage(REQUESTNUMBER)"
+                        + " VALUES (?)";
+                insertMessage(query, Message.RESPONSE_CODE, newResponse, null);
+
                 // if reservation was not successful return Response Message
-                return new ResponseMessage(((RequestMessage) obj).getRQ_NUMBER()).printRespMessage();
+                return newResponse.printRespMessage();
             }
 
-        } else if (obj instanceof ResponseMessage) {
-            // For debugging purpose
-            // System.out.println(((AcceptMessage) obj).printAMessage());
         } else if (obj instanceof AcceptMessage) {
+
         } else if (obj instanceof RejectMessage) {
         } else if (obj instanceof CancelMessageII) {
         } else if (obj instanceof WithdrawMessageII) {
