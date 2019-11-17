@@ -370,64 +370,82 @@ public class Utility {
     }
 
     //TODO complete the logic
-    public static String processingPendingMessages (Iterator itr, String server, String requester) throws IOException, ParseException {
-        while (itr.hasNext()) {
-            Object obj = null;
-            try {
-                // TODO check
-                obj = Utility.parsingMessage(itr.next().toString(),null);
-            } catch (SQLException e) {
-                e.printStackTrace();
+    public static String processingServer (Object o, String server, String requester) throws IOException, ParseException {
+        Object obj = null;
+        try {
+            // TODO check
+            obj = Utility.parsingMessage(o.toString(),null);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        if (obj instanceof RequestMessage) {
+            // For debugging purpose
+            // System.out.println(((RequestMessage) obj).printReqMessage());
+
+            // Create a temporary invitation ready to be used/sent
+            InviteMessage newInvite = new InviteMessage(server, ((RequestMessage) obj).getRQ_DATE(),
+                    ((RequestMessage) obj).getRQ_TIME(), ((RequestMessage) obj).getRQ_TOPIC(), requester);
+
+            // Check is the room is available&reserved
+            boolean isReserved = RoomsUtility.reserveRoom(((RequestMessage) obj).getRQ_DATE(),
+                    ((RequestMessage) obj).getRQ_TIME(), newInvite.getMT_NUMBER());
+
+            if (isReserved) {
+                // if reservation was not successful return Response Message
+                return newInvite.printInvMessage();
+
+                //TODO to be continued, make sure the remaining logic is implemented
+                //Check if the minimum number of participants have accepted.
+                //If yes then confirm.
+            }
+            else {
+                // if reservation was not successful return Response Message
+                return new ResponseMessage(((RequestMessage) obj).getRQ_NUMBER()).printRespMessage();
             }
 
-            if (obj instanceof RequestMessage) {
-                // For debugging purpose
-                // System.out.println(((RequestMessage) obj).printReqMessage());
-
-                // Create a temporary invitation ready to be used/sent
-                InviteMessage newInvite = new InviteMessage(server, ((RequestMessage) obj).getRQ_DATE(),
-                        ((RequestMessage) obj).getRQ_TIME(), ((RequestMessage) obj).getRQ_TOPIC(), requester);
-
-                // Check is the room is available&reserved
-                boolean isReserved = RoomsUtility.reserveRoom(((RequestMessage) obj).getRQ_DATE(),
-                        ((RequestMessage) obj).getRQ_TIME(), newInvite.getMT_NUMBER());
-
-                if (isReserved) {
-                    // if reservation was not successful return Response Message
-                    return newInvite.printInvMessage();
-
-                    //TODO to be continued, make sure the remaining logic is implemented
-                    //Check if the minimum number of participants have accepted.
-                    //If yes then confirm.
-                }
-                else {
-                    // if reservation was not successful return Response Message
-                    return new ResponseMessage(((RequestMessage) obj).getRQ_NUMBER()).printRespMessage();
-                }
-
-
-
-
-            } else if (obj instanceof ResponseMessage) {
-                // For debugging purpose
-                // System.out.println(((AcceptMessage) obj).printAMessage());
-            } else if (obj instanceof InviteMessage) {
-            } else if (obj instanceof AcceptMessage) {
-            } else if (obj instanceof RejectMessage) {
-            } else if (obj instanceof ConfirmMessage) {
-            } else if (obj instanceof ScheduledMessage) {
-            } else if (obj instanceof CancelMessageI) {
-            } else if (obj instanceof NotScheduledMessage) {
-            } else if (obj instanceof CancelMessageII) {
-            } else if (obj instanceof WithdrawMessageI) {
-            } else if (obj instanceof WithdrawMessageII) {
-            } else if (obj instanceof AddMessage) {
-            } else if (obj instanceof AddedMessage) {
-            } else if (obj instanceof RoomChangeMessage) {
-            } else {
-            }
+        } else if (obj instanceof ResponseMessage) {
+            // For debugging purpose
+            // System.out.println(((AcceptMessage) obj).printAMessage());
+        } else if (obj instanceof AcceptMessage) {
+        } else if (obj instanceof RejectMessage) {
+        } else if (obj instanceof CancelMessageII) {
+        } else if (obj instanceof WithdrawMessageII) {
+        } else if (obj instanceof AddMessage) {
+        } else if (obj instanceof RoomChangeMessage) {
+        } else {
         }
         return null;
+    }
+
+    // TODO for client processing
+    public static String processingClient (Object o, String server, String requester) throws IOException, ParseException {
+        Object obj = null;
+        try {
+            // TODO check
+            obj = Utility.parsingMessage(o.toString(),null);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+
+        if (obj instanceof ResponseMessage) {
+            // For debugging purpose
+            // System.out.println(((AcceptMessage) obj).printAMessage());
+        } else if (obj instanceof InviteMessage) {
+        } else if (obj instanceof ConfirmMessage) {
+        } else if (obj instanceof ScheduledMessage) {
+        } else if (obj instanceof CancelMessageI) {
+        } else if (obj instanceof NotScheduledMessage) {
+        } else if (obj instanceof WithdrawMessageI) {
+        } else if (obj instanceof AddedMessage) {
+        } else {
+        }
+        return null;
+    }
+
+    /* String format for DB */
+    public static String fmtStrDB (String s) {
+        return "\'" + s + "\'";
     }
 
 }

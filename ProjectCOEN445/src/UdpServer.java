@@ -8,71 +8,120 @@ import java.sql.SQLException;
 import java.util.Iterator;
 import java.util.PriorityQueue;
 import java.util.Properties;
+import java.util.Scanner;
 
 
 public class UdpServer extends Utility
 {
-    public static void main(String[] args) throws IOException, SQLException {
+    public static void main(String[] args) throws IOException, SQLException, Exception {
 
         establishDBConnection();
 
+        //receiving conf
         System.out.println("Starting UDP SERVER");
         DatagramSocket ds = new DatagramSocket(44444);
-        byte[] receive = new byte[1024];
-        DatagramPacket DpReceive = null;
+
+
+        //Sending conf
+        InetAddress ipS = InetAddress.getByName("127.0.0.1");
+        byte buf_s[] = null;
+
 
         // Queue that holds all the pending messages
         PriorityQueue <String> pendingMessagesToBeTreated = new PriorityQueue<>();
-        Iterator itr = pendingMessagesToBeTreated.iterator();
 
-        //Sending conf
-        InetAddress ip = InetAddress.getByName("127.0.0.1");
-        byte buf_s[] = null;
+        Thread receivingTS = new Thread(
+                new Runnable() {
+                    @Override
+                    public void run() {
 
-        while (true) {
-            DpReceive = new DatagramPacket(receive, 1024);
-            ds.receive(DpReceive);
-            String str = new String(DpReceive.getData(), 0, DpReceive.getLength());
-            String from = DpReceive.getSocketAddress().toString();
-            String ot = "Client-" + from +":-" + str;
-            System.out.println(parsingMessage(ot, from).toString());
-            System.out.println(ot);
+                        while (true)
+                        {
+                            // Receiving Configuration
+                            byte bu_rec[] = new byte[1024];
+                            DatagramPacket DpReceive = null;
 
-            if (str.contains("0000")) {
-                System.out.println("Client sent bye.....EXITING");
-                break;
-            }
+                            try {
+                                // received from the client
+                                DpReceive = new DatagramPacket(bu_rec, 1024);
+                                ds.receive(DpReceive);
 
-            // Storing in the pending queue
-            pendingMessagesToBeTreated.add(ot);
+                                if (DpReceive != null) {
+                                    String str = new String(DpReceive.getData(), 0, DpReceive.getLength());
+                                    String from = DpReceive.getSocketAddress().toString();
+                                    String ot = "Client-" + from + ":-" + str;
+                                    System.out.println(parsingMessage(ot, from).toString());
+                                    System.out.println(ot);
 
-            //TODO to close the connection
-//            if (str.contains("bye")) {
-//                System.out.println("Client sent bye.....EXITING");
-//                break;
-//            }
+                                    // Storing in the pending queue
+                                    pendingMessagesToBeTreated.add(ot);
 
-            // Clear the buffer after every message.
-            receive = new byte[1024];
+                                }
+                                bu_rec = new byte[1024];
+
+                                Thread.sleep(1000);
+
+                            } catch (Exception e) {
+                                e.printStackTrace();
+                            }
+                        }
+                    }
+                });
+
+        Thread sendingTS = new Thread(
+                new Runnable() {
+                    @Override
+                    public void run() {
+                        while(true) {
+                            Iterator itr = pendingMessagesToBeTreated.iterator();
+                            // Sending Configuration
+                            String inp = null;
+                            byte buf_s[] = new byte[1024];
+                            while (itr.hasNext()) {
+                                try {
+                                    Object currMsg = itr.next();
+                                    inp = Utility.processingServer(currMsg, ipS.toString(), null); // convert the String input into the byte array.
+                                    // send the user's input
+                                    System.out.println("Please Input your inputs");
+                                    if (inp != null) {
+                                        if (!inp.equals("Invalid Message")) {
+                                            buf_s = inp.getBytes();
+
+                                            DatagramPacket DpSend = new DatagramPacket(buf_s, buf_s.length, ipS, 44445);
+                                            ds.send(DpSend);
+                                            pendingMessagesToBeTreated.remove(currMsg);
+                                            if (inp.equals("bye"))
+                                                break;
+                                        }
+                                    }
+                                } catch (Exception e) {
+                                    e.printStackTrace();
+                                }
+                            }
+
+                            try {
+                                Thread.sleep(3000);
+                            }catch (InterruptedException e) {
+                                System.out.println(e + "Interrupted");
+                            }
+                        }
+                    }
+                });
+
+//        while (true) {
+        receivingTS.start();
+        sendingTS.start();
+        receivingTS.join();
+        sendingTS.join();
+//            ds.close();
+//        }
 
 
-            //TODO to send responses
-//            Scanner sc = new Scanner(System.in);
-//            System.out.println("Please Input your inputs");
-//            String inp = sc.next().toString();
-//            buf_s = inp.getBytes();
-//            reserveroom = Reserveroom();
-//            System.out.println(reserveroom);
-//            DatagramPacket DpSend = new DatagramPacket(buf_s, buf_s.length, ip, 44445);
-//            ds.send(DpSend);
-
-        }
-
-
-        //TODO to process different messages
-//        Utility.processingPendingMessages(itr);
-
-        ds.close();
+        //TODO to close the connection
+//        if (str.contains("bye")) {
+//            System.out.println("Client sent bye.....EXITING");
+//            break;
+//        }
     }
 
     private static void establishDBConnection() {
