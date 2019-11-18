@@ -5,6 +5,9 @@ Assumptions
 - Can only book hour, since time slots are split per hour
 - One client per computer
 - We are dependent on the database for state saving and logging(Check with the prof)
+- Do not enter '#' in the entire message
+
+"We need to pause the threads when he is inputting stuff"
 
 
 Input format for "CLIENT" sending messages

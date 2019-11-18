@@ -16,17 +16,20 @@ public class UdpServer extends Utility
     public static void main(String[] args) throws IOException, SQLException, Exception {
 
         establishDBConnection();
-
         // Configuration
         System.out.println("Starting UDP SERVER");
+
+        // Setup
         Scanner myObj = new Scanner(System.in);
-        System.out.println("PLease enter the port on which you'd like to server the server");
+
+        System.out.println("Please enter the port on which you'd like to listen (server):");
         String Port = myObj.nextLine();
-        System.out.println("PLease enter the IP address of the server");
+
+        System.out.println("Please enter your IP address (server):");
         String IpAddress = myObj.nextLine();
+
         DatagramSocket ds = new DatagramSocket(Integer.parseInt(Port));
         InetAddress ipS = InetAddress.getByName(IpAddress);
-        System.out.println("UDP Server Started");
 
         // Queue that holds all the pending messages
         PriorityQueue <String> pendingMessagesToBeTreated = new PriorityQueue<>();
@@ -95,7 +98,10 @@ public class UdpServer extends Utility
                                 if (!inp.equals("Invalid Message")) {
                                     buf_s = inp.getBytes();
 
-                                    DatagramPacket DpSend = new DatagramPacket(buf_s, buf_s.length, ipS, 44447);
+                                    InetAddress ipC = InetAddress.getByName(currMsg[1].replace("/", "").split(":")[0]);
+                                    int ipC_port = Integer.parseInt(currMsg[1].split(":")[1]);
+
+                                    DatagramPacket DpSend = new DatagramPacket(buf_s, buf_s.length, ipC, ipC_port);
                                     ds.send(DpSend);
                                     pendingMessagesToBeTreated.remove(currObj);
                                     if (inp.equals("bye"))

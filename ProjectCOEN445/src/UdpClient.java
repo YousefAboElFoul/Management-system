@@ -9,16 +9,19 @@ public class UdpClient
     {
         // Configuration
         System.out.println("Starting UDP CLIENT");
+
+        // Setup
         Scanner myObj = new Scanner(System.in);
-        System.out.println("PLease enter the port on which you'd like to server the client");
+
+        System.out.println("Please enter the port on which the server is listening:");
         String Port = myObj.nextLine();
-        System.out.println("PLease enter the IP address of the client");
+
+        System.out.println("Please enter the IP address of the server:");
         String IpAddress = myObj.nextLine();
-        DatagramSocket ds = new DatagramSocket(Integer.parseInt(Port));
-        InetAddress ip = InetAddress.getByName(IpAddress);
-        System.out.println("UDP Client Started");
-        // DatagramSocket ds = new DatagramSocket(44447);
-        //InetAddress ip = InetAddress.getByName("127.0.0.1");
+
+        DatagramSocket ds = new DatagramSocket();
+        InetAddress ipS = InetAddress.getByName(IpAddress);
+        String myIp = InetAddress.getLocalHost().getHostAddress();
 
         Thread sendingTC = new Thread( new Runnable() {
             @Override
@@ -33,15 +36,15 @@ public class UdpClient
                     System.out.println("Please Input your inputs");
 
                     try {
-                        inp = Utility.getUserInput(sc.nextLine(), ip.toString()); // convert the String input into the byte array.
+                        inp = Utility.getUserInput(sc.nextLine(), myIp); // convert the String input into the byte array.
                         // send the user's input
                         while (!inp.equals("Invalid Message")) {
                             buf = inp.getBytes();
-                            DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ip, 44446);
+                            DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ipS, Integer.parseInt(Port));
                             ds.send(DpSend);
 
                             System.out.println("Please Input your inputs");
-                            inp = Utility.getUserInput(sc.nextLine(), ip.toString()); // convert the String input into the byte array.
+                            inp = Utility.getUserInput(sc.nextLine(), myIp); // convert the String input into the byte array.
                             // break the loop if user enters "bye"
                             if (inp.equals("bye"))
                                 break;
