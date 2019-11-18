@@ -429,8 +429,90 @@ public class Utility {
             // System.out.println(((AcceptMessage) obj).printAMessage());
         } else if (obj instanceof InviteMessage) {
         } else if (obj instanceof ConfirmMessage) {
+
+            //RBMS checks if number of people accepted satisfies the minimum
+            // if yes send confirmation to all participants
+
+            String participationCountCheck="SELECT MINIMUM, LISTOFCONFIRMEDPARTICIPANTS " +
+                    "FROM SCHEDULEDMESSAGE S INNER JOIN REQUESTMESSAGE R on S.REQUESTNUMBER=R.REQUESTNUMBER";
+            //Query obtains the minimum and list of confirmed participants
+            try (Connection conn = Utility.connect();
+                 PreparedStatement preparedStatementObject = conn.prepareStatement(participationCountCheck);
+                 ResultSet resultObject = preparedStatementObject.executeQuery()) {
+                String testQuery1 = null;
+                String testQuery2 = null;
+                String minimum1="3";
+                String minimum2="2";
+                String minimum3="4";
+                String confirmedParticipants1="12,13,14";
+                String confirmedParticipants2="12,14";
+                String confirmedParticipants3="12";
+                if (!resultObject.next()) {
+                    testQuery1="INSERT INTO REQUESTMESSAGE (MINIMUM) VALUES(" + Utility.fmtStrDB(minimum1) + ")," +
+                            "("+Utility.fmtStrDB(minimum2)+"),"+"("+Utility.fmtStrDB(minimum3)+")";
+                    testQuery2="INSERT INTO SCHEDULEDMESSAGE (LISTOFCONFIRMEDPARTICIPANTS) VALUES(" +
+                            Utility.fmtStrDB(confirmedParticipants1)+ "),"+"("+Utility.fmtStrDB(confirmedParticipants2)+
+                            "("+Utility.fmtStrDB(confirmedParticipants3)+ ")";
+                }
+                else{
+                    String obtainedMinimum = "";
+                    obtainedMinimum += resultObject.getString(1) + ",";
+
+                    String obtainedListOfConfirmedParticipants= "";
+                    obtainedListOfConfirmedParticipants += resultObject.getString(2) + ",";
+
+                    while (resultObject.next()) {
+                        obtainedMinimum += resultObject.getString(1) + ",";
+                        obtainedListOfConfirmedParticipants += resultObject.getString(2) + ",";
+                    }
+                    //use a delimiter on obtainedListOfConfirmedParticipants to separate the values, need to put inside
+                    //the while loop too?
+                    String[] obtainedListOfConfirmedParticipantsValues=obtainedListOfConfirmedParticipants.split(",");
+
+                    String[] obtainedMinimumValues=obtainedMinimum.split(",");
+                    int[] obtainedMinimumInteger=new int[obtainedMinimumValues.length];
+                    for(int i=0; i<=obtainedMinimumValues.length-1; i++)
+                    {
+                        obtainedMinimumInteger[i]=Integer.parseInt(obtainedMinimumValues[i]);
+                        if(obtainedListOfConfirmedParticipantsValues.length>=obtainedMinimumInteger[i])
+                        {
+                            //send confirmation to all participants
+                        }
+                    }
+
+                }
+                conn.prepareStatement(testQuery1).execute();
+                conn.prepareStatement(testQuery2).execute();
+            }
+            catch(SQLException ex)
+            {
+                ex.printStackTrace();
+            }
         } else if (obj instanceof ScheduledMessage) {
+
+            //RBMS checks if number of people accepted satisfies the minimum
+            // if yes response sent to the organizer informing him of the positive answers and the IP addresses of the
+            // participants, and the meeting is scheduled
+
+            String participationCountCheck="SELECT MINIMUM, LISTOFCONFIRMEDPARTICIPANTS " +
+                    "FROM SCHEDULEDMESSAGE S INNER JOIN REQUESTMESSAGE R on S.REQUESTNUMBER=R.REQUESTNUMBER";
+            try (Connection conn = Utility.connect();
+                 PreparedStatement preparedStatementObject = conn.prepareStatement(participationCountCheck);
+                 ResultSet res = preparedStatementObject.executeQuery()) {
+                String q2 = null;
+            }
+            catch(SQLException ex)
+            {
+                ex.printStackTrace();
+            }
+            //get number of participants that have accepted the invitation
+            String participationCount="SELECT COUNT(LISTOFCONFIRMEDPARTICIPANTS) FROM SCHEDULEDMESSAGE S INNER JOIN REQUESTMESSAGE R on S.REQUESTNUMBER=R.REQUESTNUMBER";
+            int participationCountInteger=Integer.parseInt(participationCount);
         } else if (obj instanceof CancelMessageI) {
+            //RBMS checks if number of people accepted satisfies the minimum
+            //if number of people accepted is less than the minimum, cancel message sent to all participants who accepted
+            //and response sent to requester with the number of participants that accepted and their ip addresses
+            String participationCount="SELECT REQUESTNUMBER FROM SCHEDULEDMESSAGE S INNER JOIN REQUESTMESSAGE R on S.REQUESTNUMBER=R.REQUESTNUMBER"+"WHERE LISTOFPARTICIPANTS<MINIMUM";
         } else if (obj instanceof NotScheduledMessage) {
         } else if (obj instanceof WithdrawMessageI) {
         } else if (obj instanceof AddedMessage) {
