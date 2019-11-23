@@ -24,7 +24,18 @@ CREATE TABLE RoomReservation(
                                 DATEINSERTED date NOT NULL,
                                 START_TIME time NOT NULL,
                                 MEETINGNUMBER VARCHAR(255) NOT NULL,
-                                CONSTRAINT Room_uq UNIQUE (MEETINGNUMBER, ROOMNUMBER)
+                                CONSTRAINT Room_uk UNIQUE (MEETINGNUMBER, ROOMNUMBER)
+);
+
+
+
+CREATE TABLE Registration(
+                             ID SERIAL PRIMARY KEY NOT NULL,
+                             CLIENTNAME VARCHAR(255) NOT NULL,
+                             IPADRESS VARCHAR(255) NOT NULL,
+                             LISTENINGPORT INT DEFAULT 44445,
+                             CONSTRAINT Registration_c_uk UNIQUE (CLIENTNAME),
+                             CONSTRAINT Registration_i_uk UNIQUE (IPADRESS)
 );
 
 CREATE TABLE InviteMessage(
@@ -34,10 +45,10 @@ CREATE TABLE InviteMessage(
                               MEETINGTIME time NOT NULL,
                               TOPIC VARCHAR(255) NOT NULL,
                               REQUESTER VARCHAR(255) NOT NULL,
-                              TIMEISUP BOOLEAN DEFAULT FALSE,
+                              REQUESTNUMBER VARCHAR(255) NOT NULL,
                               CONSTRAINT Invite_uq UNIQUE (MEETINGNUMBER),
-                              CONSTRAINT Invite_Room_fk
-                                  FOREIGN KEY (MEETINGNUMBER) REFERENCES InviteMessage (MEETINGNUMBER)
+                              CONSTRAINT Invite_Reg_fk
+                                  FOREIGN KEY (REQUESTER) REFERENCES Registration (CLIENTNAME)
 );
 
 CREATE TABLE AcceptMessage(
@@ -46,7 +57,9 @@ CREATE TABLE AcceptMessage(
                               WHOACCEPTED VARCHAR(255) NOT NULL,
                               CONSTRAINT Accept_uq UNIQUE (MEETINGNUMBER, WHOACCEPTED),
                               CONSTRAINT Accept_fk
-                                  FOREIGN KEY (MEETINGNUMBER) REFERENCES InviteMessage (MEETINGNUMBER)
+                                  FOREIGN KEY (MEETINGNUMBER) REFERENCES InviteMessage (MEETINGNUMBER),
+                              CONSTRAINT Accept_Reg_fk
+                                  FOREIGN KEY (WHOACCEPTED) REFERENCES Registration (CLIENTNAME)
 );
 
 CREATE TABLE RejectMessage(
@@ -54,8 +67,10 @@ CREATE TABLE RejectMessage(
                               MEETINGNUMBER VARCHAR(255) NOT NULL,
                               WHOREJECTED VARCHAR(255) NOT NULL,
                               CONSTRAINT Reject_uq UNIQUE (MEETINGNUMBER, WHOREJECTED),
-                              CONSTRAINT Reject_fk
-                                  FOREIGN KEY (MEETINGNUMBER) REFERENCES InviteMessage (MEETINGNUMBER)
+                              CONSTRAINT Reject_Inv_fk
+                                  FOREIGN KEY (MEETINGNUMBER) REFERENCES InviteMessage (MEETINGNUMBER),
+                              CONSTRAINT Reject_Reg_fk
+                                  FOREIGN KEY (WHOREJECTED) REFERENCES Registration (CLIENTNAME)
 );
 
 CREATE TABLE ConfirmMessage(
@@ -100,7 +115,7 @@ CREATE TABLE NotScheduledMessage(
                                     LISTOFCONFIRMEDPARTICIPANTS VARCHAR(255) DEFAULT NULL,
                                     TOPIC VARCHAR(255) NOT NULL,
                                     CONSTRAINT NotScheduled_uq UNIQUE (REQUESTNUMBER, DATEINSERTED, PROPOSEDTIME, MINIMUM, TOPIC),
-                                    CONSTRAINT NotScheduled_fk
+                                    CONSTRAINT NotScheduled_Req_fk
                                         FOREIGN KEY (REQUESTNUMBER) REFERENCES RequestMessage (REQUESTNUMBER)
 );
 
@@ -110,7 +125,9 @@ CREATE TABLE WithdrawMessage(
                                 WHOWITHDRAWED VARCHAR(255) NOT NULL,
                                 CONSTRAINT Withdraw_uq UNIQUE (MEETINGNUMBER, WHOWITHDRAWED),
                                 CONSTRAINT Withdraw_Inv_fk
-                                    FOREIGN KEY (MEETINGNUMBER) REFERENCES ScheduledMessage (MEETINGNUMBER)
+                                    FOREIGN KEY (MEETINGNUMBER) REFERENCES ScheduledMessage (MEETINGNUMBER),
+                                CONSTRAINT Withdraw_Reg_fk
+                                    FOREIGN KEY (WHOWITHDRAWED) REFERENCES Registration (CLIENTNAME)
 );
 
 -- Could update wasadded
@@ -141,10 +158,28 @@ CREATE TABLE ParticipantsConfirmed(
                                       CONFIRMED BOOLEAN DEFAULT TRUE,
                                       CONSTRAINT PartConf_uq UNIQUE (MEETINGNUMBER),
                                       CONSTRAINT PartConf_Inv_fk
-                                          FOREIGN KEY (MEETINGNUMBER) REFERENCES InviteMessage (MEETINGNUMBER)
+                                          FOREIGN KEY (MEETINGNUMBER) REFERENCES InviteMessage (MEETINGNUMBER),
+                                      CONSTRAINT PartConf_Reg_fk
+                                          FOREIGN KEY (WHO) REFERENCES Registration (CLIENTNAME)
 );
 
 CREATE TABLE MessageCount(
-                              WHO VARCHAR(255) PRIMARY KEY NOT NULL,
-                              MCOUNT INT DEFAULT 1
+                             WHO VARCHAR(255) PRIMARY KEY NOT NULL,
+                             MCOUNT INT DEFAULT 1,
+                             CONSTRAINT MsgCount_Reg_fk
+                                 FOREIGN KEY (WHO) REFERENCES Registration (CLIENTNAME)
+);
+
+CREATE TABLE Bookings(
+                         ID SERIAL PRIMARY KEY NOT NULL,
+                         CLIENTNAME VARCHAR(255) NOT NULL,
+                         MEETINGNUMBER VARCHAR(255) NOT NULL,
+                         DATEINSERTED date NOT NULL,
+                         START_TIME time NOT NULL,
+                         ROOMNUMBER VARCHAR(255) NOT NULL,
+                         CONSTRAINT Bookings_uk UNIQUE (CLIENTNAME, MEETINGNUMBER),
+                         CONSTRAINT Bookings_Reg_fk
+                             FOREIGN KEY (CLIENTNAME) REFERENCES Registration (CLIENTNAME),
+                         CONSTRAINT Bookings_Room_fk
+                             FOREIGN KEY (MEETINGNUMBER, ROOMNUMBER) REFERENCES RoomReservation (MEETINGNUMBER, ROOMNUMBER)
 );
