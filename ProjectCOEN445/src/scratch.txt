@@ -6,6 +6,10 @@ Assumptions
 - One client per computer
 - We are dependent on the database for state saving and logging(Check with the prof)
 - Do not enter '#' in the entire message
+- Add Register table
+- Add Appointment book table (update c1 with this ip)
+- Add a meeting to my schedule the moment I accept
+
 
 "We need to pause the threads when he is inputting stuff"
 
@@ -14,6 +18,7 @@ Input format for "CLIENT" sending messages
 ***********************************
 - For REQUEST MESSAGE (rq_code date time min_part# part_list topic)
         1110 03/25/2019 15:00 3 12,13,14 welcome
+        1110 03/25/2019 15:00 3 127.0.0.1,127.0.0.1,127.0.0.1 welcome
 
 - FOR ACCEPT MESSAGE (accept_code mt#)
         3330 /127.0.0.1-1

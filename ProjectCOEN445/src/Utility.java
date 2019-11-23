@@ -44,47 +44,23 @@ public class Utility {
                     break;
                 case Message.ACCEPT_CODE:
                     messageReceived = (T) new AcceptMessage(txt[1]);
-
-                    // the mysql insert statement
-                    query = "INSERT INTO AcceptMessage(MEETINGNUMBER, WHOACCEPTED)"
-                            + " VALUES (?, ?)";
                     break;
                 case Message.REJECT_CODE:
                     messageReceived = (T) new RejectMessage(txt[1]);
-
-                    // the mysql insert statement
-                    query = "INSERT INTO RejectMessage(MEETINGNUMBER, WHOREJECTED)"
-                            + " VALUES (?, ?)";
                     break;
                 case Message.CONFIRM_CODE:
                     messageReceived = (T) new ConfirmMessage(txt[1], txt[2]);
-
-                    // the mysql insert statement
-                    query = "INSERT INTO ConfirmMessage(MEETINGNUMBER, ROOMNUMBER)"
-                            + " VALUES (?, ?)";
                     break;
                 case Message.SCHEDULED_CODE:
                     ArrayList<String> conf_list = getParticipantsStrings(txt[4]);
                     messageReceived = (T) new ScheduledMessage(txt[1], txt[2], txt[3], conf_list);
-
-                    // the mysql insert statement
-                    query = "INSERT INTO ScheduledMessage(REQUESTNUMBER, MEETINGNUMBER, ROOMNUMBER, LISTOFCONFIRMEDPARTICIPANTS)"
-                            + " VALUES (?, ?, ?, ?)";
                     break;
                 case Message.CANCEL_1_CODE:
                     messageReceived = (T) new CancelMessageI(txt[1]);
-
-                    // the mysql insert statement
-                    query = "INSERT INTO CancelMessage(MEETINGNUMBER, WHOCANCELED)"
-                            + " VALUES (?, ?)";
                     break;
                 case Message.NOT_SCHEDULED_CODE:
                     ArrayList<String> nscheq_list = getParticipantsStrings(txt[5]);
                     messageReceived = (T) new NotScheduledMessage(txt[1], txt[2], txt[3], Integer.valueOf(txt[4]), nscheq_list, txt[6]);
-
-                    // the mysql insert statement
-                    query = "INSERT INTO NotScheduledMessage(REQUESTNUMBER, DATEINSERTED, PROPOSEDTIME, MINIMUM, LISTOFCONFIRMEDPARTICIPANTS, TOPIC)"
-                            + " VALUES (?, ?, ?, ?, ?, ?)";
                     break;
                 case Message.CANCEL_2_CODE:
                     messageReceived = (T) new CancelMessageII(txt[1]);
@@ -166,7 +142,7 @@ public class Utility {
                     preparedStmt.setDate(2, new java.sql.Date(format.parse(((RequestMessage) message).getRQ_DATE()).getTime()));
                     preparedStmt.setTime(3, Time.valueOf(LocalTime.parse(((RequestMessage) message).getRQ_TIME())));
                     preparedStmt.setInt(4, ((RequestMessage) message).getMIN_NUMBER_OF_PARTICIPANTS());
-                    preparedStmt.setString(5, ((RequestMessage) message).getLIST_OF_PARTICIPANTS().toString());
+                    preparedStmt.setString(5, ((RequestMessage) message).getLIST_OF_PARTICIPANTS().toString().replace("[[", "").replace("]]", ""));
                     preparedStmt.setString(6, ((RequestMessage) message).getRQ_TOPIC());
                     break;
                 case Message.RESPONSE_CODE:
@@ -384,7 +360,7 @@ public class Utility {
                 insertMessage(query, Message.INVITE_CODE, newInvite, null);
 
                 // if reservation was successful return Invite Message
-                return newInvite.printInvMessage();
+                return newInvite.printInvMessage() + " & "+((RequestMessage)obj).getLIST_OF_PARTICIPANTS();
 
                 //TODO to be continued, make sure the remaining logic is implemented
                 //Check if the minimum number of participants have accepted.
@@ -404,12 +380,33 @@ public class Utility {
             }
 
         } else if (obj instanceof AcceptMessage) {
+            //Insert into the DB whoaccpted
+            AcceptMessage newAccept = new AcceptMessage(((AcceptMessage) obj).getMT_NUMBER());
+            String query = "INSERT INTO AcceptMessage(MEETINGNUMBER, WHOACCEPTED)"
+                    + " VALUES (?, ?)";
+            insertMessage(query, Message.ACCEPT_CODE, newAccept, null);
+            //TODO
+            //NEED to add to particpants confirmed as well
 
         } else if (obj instanceof RejectMessage) {
+            //Insert into the DB whorejected
+            // the mysql insert statement
+            RejectMessage newReject = new RejectMessage(((RejectMessage) obj).getMT_NUMBER());
+            String query = "INSERT INTO RejectMessage(MEETINGNUMBER, WHOREJECTED)"
+                    + " VALUES (?, ?)";
+            insertMessage(query, Message.REJECT_CODE, newReject, null);
+            //TODO
+            //NEED to add to particpants confirmed as well
+
         } else if (obj instanceof CancelMessageII) {
+            //Cancel message
         } else if (obj instanceof WithdrawMessageII) {
+            // Insert into DB who
+
         } else if (obj instanceof AddMessage) {
+            //Add people who were invited
         } else if (obj instanceof RoomChangeMessage) {
+            //maintance
         } else {
         }
         return null;

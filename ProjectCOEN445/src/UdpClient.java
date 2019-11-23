@@ -1,3 +1,4 @@
+import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -23,6 +24,7 @@ public class UdpClient
         InetAddress ipS = InetAddress.getByName(IpAddress);
         String myIp = InetAddress.getLocalHost().getHostAddress();
 
+
         Thread sendingTC = new Thread( new Runnable() {
             @Override
             public void run() {
@@ -32,13 +34,22 @@ public class UdpClient
                     String inp = null;
                     byte buf[] = null;
 
+                    //Intialize communication with the Server
+                    try {
+                        sendHiMessagetotheServer(ds ,ipS, Port);
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+
                     Scanner sc = new Scanner(System.in);
                     System.out.println("Please Input your inputs");
 
                     try {
+                        ;
                         inp = Utility.getUserInput(sc.nextLine(), myIp); // convert the String input into the byte array.
                         // send the user's input
                         while (!inp.equals("Invalid Message")) {
+
                             buf = inp.getBytes();
                             DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ipS, Integer.parseInt(Port));
                             ds.send(DpSend);
@@ -96,5 +107,18 @@ public class UdpClient
 
 //        ds.close();
     }
+
+    /**
+     * @param ds
+     * @param ipS
+     * @param port
+     */
+    private static void sendHiMessagetotheServer(DatagramSocket ds, InetAddress ipS, String port) throws IOException {
+        String hiMessage = "/ Hi Server, My hostname is " + InetAddress.getByName(InetAddress.getLocalHost().getHostName());
+        byte buf[] = hiMessage.getBytes();
+        DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ipS, Integer.parseInt(port));
+        ds.send(DpSend);
+    }
+
 }
 
