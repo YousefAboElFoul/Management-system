@@ -25,11 +25,13 @@ public class UdpServer extends Utility
         System.out.println("Please enter the port on which you'd like to listen (server):");
         String Port = myObj.nextLine();
 
-        System.out.println("Please enter your IP address (server):");
-        String IpAddress = myObj.nextLine();
+        // TODO - might be removed
+//        System.out.println("Please enter your IP address (server):");
+//        String IpAddress = myObj.nextLine();
 
         DatagramSocket ds = new DatagramSocket(Integer.parseInt(Port));
-        InetAddress ipS = InetAddress.getByName(IpAddress);
+//        InetAddress ipS = InetAddress.getByName(IpAddress);
+        InetAddress ipS = InetAddress.getByName(InetAddress.getLocalHost().getHostAddress());
 
         // Queue that holds all the pending messages
         PriorityQueue <String> pendingMessagesToBeTreated = new PriorityQueue<>();

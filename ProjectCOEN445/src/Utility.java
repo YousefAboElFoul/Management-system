@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.net.UnknownHostException;
 import java.sql.*;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -314,7 +315,7 @@ public class Utility {
     }
 
     /* Switch between messages */
-    private static String switchMessages (String ip, String[] ui ,int arg_1) {
+    private static String switchMessages (String ip, String[] ui ,int arg_1) throws UnknownHostException {
         switch (arg_1) {
             case Message.REQUEST_CODE:
                 ArrayList<String> req_list = getParticipantsStrings(ui[4]);
@@ -524,6 +525,34 @@ public class Utility {
     /* String format for DB */
     public static String fmtStrDB (String s) {
         return "\'" + s + "\'";
+    }
+
+    /* Updates the count for every request/meeting number and save its state */
+    public static int messageCount(String myIp, int ct) {
+        String q1 = "SELECT MCOUNT"
+                + " FROM MessageCount"
+                + " WHERE WHO = " + Utility.fmtStrDB(myIp);
+        try (Connection conn = Utility.connect();
+             PreparedStatement pstmt = conn.prepareStatement(q1);
+             ResultSet res = pstmt.executeQuery()) {
+            String q2 = null;
+
+            if (!res.next()) {
+                q2 = "INSERT INTO MessageCount (WHO)"
+                        + " VALUES (" + Utility.fmtStrDB(myIp) + ")";
+            } else {
+                String result = res.getString(1);
+                ct = Integer.parseInt(result) + 1;
+                q2 = "UPDATE MessageCount"
+                        + " SET MCOUNT = " + Utility.fmtStrDB(String.valueOf(ct))
+                        + " WHERE WHO = " + Utility.fmtStrDB(myIp);
+            }
+            conn.prepareStatement(q2).execute();
+        } catch (SQLException ex) {
+            ex.printStackTrace();
+        }
+
+        return ct;
     }
 
 }

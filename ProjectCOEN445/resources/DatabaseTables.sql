@@ -34,6 +34,7 @@ CREATE TABLE InviteMessage(
                               MEETINGTIME time NOT NULL,
                               TOPIC VARCHAR(255) NOT NULL,
                               REQUESTER VARCHAR(255) NOT NULL,
+                              TIMEISUP BOOLEAN DEFAULT FALSE,
                               CONSTRAINT Invite_uq UNIQUE (MEETINGNUMBER),
                               CONSTRAINT Invite_Room_fk
                                   FOREIGN KEY (MEETINGNUMBER) REFERENCES InviteMessage (MEETINGNUMBER)
@@ -141,4 +142,9 @@ CREATE TABLE ParticipantsConfirmed(
                                       CONSTRAINT PartConf_uq UNIQUE (MEETINGNUMBER),
                                       CONSTRAINT PartConf_Inv_fk
                                           FOREIGN KEY (MEETINGNUMBER) REFERENCES InviteMessage (MEETINGNUMBER)
+);
+
+CREATE TABLE MessageCount(
+                              WHO VARCHAR(255) PRIMARY KEY NOT NULL,
+                              MCOUNT INT DEFAULT 1
 );

@@ -1,3 +1,5 @@
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.Date;
 
 public class InviteMessage {
@@ -11,17 +13,19 @@ public class InviteMessage {
     public String IV_REQUESTER;
 
     // Since we have to auto increment the meeting number
-    private static int curr_mt_num = 0;
+    private static int curr_mt_num = 1;
 
-    public InviteMessage(String in, String IV_DATE, String IV_TIME, String IV_TOPIC, String IV_REQUESTER) {
+    // The ip of the system running the udpClient
+    String myIp = InetAddress.getLocalHost().getHostAddress();
+
+    public InviteMessage(String in, String IV_DATE, String IV_TIME, String IV_TOPIC, String IV_REQUESTER) throws UnknownHostException {
         if (in.contains("-")) {
             // use this notation on the server side
             this.MT_NUMBER = in;
         }
         else {
             // use this notation on the client side
-            curr_mt_num++;
-            this.MT_NUMBER = in + "-" + curr_mt_num;
+            this.MT_NUMBER = in + "-" + Utility.messageCount(myIp, curr_mt_num);
         }
         this.IV_DATE = IV_DATE;
         this.IV_TIME = IV_TIME;

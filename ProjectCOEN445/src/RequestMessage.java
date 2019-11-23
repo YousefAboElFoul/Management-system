@@ -1,3 +1,5 @@
+import java.net.InetAddress;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -13,18 +15,20 @@ public class RequestMessage {
     private String RQ_TOPIC;
 
     // Since we have to auto increment the request number
-    private static int curr_rq_num = 0;
+    private static int curr_rq_num = 1;
+
+    // The ip of the system running the udpClient
+    String myIp = InetAddress.getLocalHost().getHostAddress();
 
 
-    public RequestMessage(String in, String RQ_DATE, String RQ_TIME, int MIN_NUMBER_OF_PARTICIPANTS, ArrayList<String> LIST_OF_PARTICIPANTS, String RQ_TOPIC) {
+    public RequestMessage(String in, String RQ_DATE, String RQ_TIME, int MIN_NUMBER_OF_PARTICIPANTS, ArrayList<String> LIST_OF_PARTICIPANTS, String RQ_TOPIC) throws UnknownHostException {
         if (in.contains("-")) {
             // use this notation on the server side
             this.RQ_NUMBER = in;
         }
         else {
-            // use this notation on the client side
-            curr_rq_num++;
-            this.RQ_NUMBER = in + "-" + curr_rq_num;
+            // use this notation on the client side and save the state
+            this.RQ_NUMBER = in + "-" + Utility.messageCount(myIp, curr_rq_num);
         }
         this.RQ_DATE = RQ_DATE;
         this.RQ_TIME = RQ_TIME;
