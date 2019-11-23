@@ -34,7 +34,7 @@ CREATE TABLE InviteMessage(
                               MEETINGTIME time NOT NULL,
                               TOPIC VARCHAR(255) NOT NULL,
                               REQUESTER VARCHAR(255) NOT NULL,
-                              TIMEISUP BOOLEAN DEFAULT FALSE,
+                              REQUESTNUMBER VARCHAR(255) NOT NULL,
                               CONSTRAINT Invite_uq UNIQUE (MEETINGNUMBER),
                               CONSTRAINT Invite_Room_fk
                                   FOREIGN KEY (MEETINGNUMBER) REFERENCES InviteMessage (MEETINGNUMBER)
@@ -145,6 +145,26 @@ CREATE TABLE ParticipantsConfirmed(
 );
 
 CREATE TABLE MessageCount(
-                              WHO VARCHAR(255) PRIMARY KEY NOT NULL,
-                              MCOUNT INT DEFAULT 1
+                             WHO VARCHAR(255) PRIMARY KEY NOT NULL,
+                             MCOUNT INT DEFAULT 1
+);
+
+CREATE TABLE Registration(
+                             ID SERIAL PRIMARY KEY NOT NULL,
+                             CLIENTNAME VARCHAR(255) NOT NULL,
+                             IPADRESS VARCHAR(255) NOT NULL,
+                             LISTENINGPORT INT DEFAULT 44445,
+                             CONSTRAINT Registration_uk UNIQUE (CLIENTNAME, IPADRESS)
+);
+
+CREATE TABLE Bookings(
+                         ID SERIAL PRIMARY KEY NOT NULL,
+                         CLIENTNAME VARCHAR(255) NOT NULL,
+                         MEETINGNUMBER VARCHAR(255) NOT NULL,
+                         DATEINSERTED date NOT NULL,
+                         START_TIME time NOT NULL,
+                         ROOMNUMBER VARCHAR(255) NOT NULL,
+                         CONSTRAINT Bookings_uk UNIQUE (CLIENTNAME, MEETINGNUMBER),
+                         CONSTRAINT Bookings_Room_fk
+                             FOREIGN KEY (MEETINGNUMBER, ROOMNUMBER) REFERENCES RoomReservation (MEETINGNUMBER, ROOMNUMBER)
 );
