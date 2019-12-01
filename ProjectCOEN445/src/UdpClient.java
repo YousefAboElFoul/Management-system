@@ -45,7 +45,6 @@ public class UdpClient
                     System.out.println("Please Input your inputs");
 
                     try {
-                        ;
                         inp = Utility.getUserInput(sc.nextLine(), myIp); // convert the String input into the byte array.
                         // send the user's input
                         while (!inp.equals("Invalid Message")) {

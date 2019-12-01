@@ -154,6 +154,7 @@ public class Utility {
                     preparedStmt.setTime(3, Time.valueOf(LocalTime.parse(((InviteMessage) message).getIV_TIME())));
                     preparedStmt.setString(4, ((InviteMessage) message).getIV_TOPIC());
                     preparedStmt.setString(5, ((InviteMessage) message).getIV_REQUESTER());
+                    preparedStmt.setString(6, from);
                     break;
                 case Message.ACCEPT_CODE:
                     preparedStmt.setString(1, ((AcceptMessage) message).getMT_NUMBER());
@@ -207,6 +208,7 @@ public class Utility {
 
             // execute the preparedstatement
             preparedStmt.execute();
+            conn.close();
         }
         catch (SQLException | ParseException ex) {
             System.out.println(ex.getMessage());
@@ -259,6 +261,7 @@ public class Utility {
 
             // execute the preparedstatement
             preparedStmt.executeUpdate();
+            conn.close();
         }
         catch (SQLException ex) {
             System.out.println(ex.getMessage());
@@ -355,9 +358,9 @@ public class Utility {
 
             if (isReserved) {
                 // the mysql insert statement
-                String query = "INSERT INTO InviteMessage(MEETINGNUMBER, DATEINSERTED, MEETINGTIME, TOPIC, REQUESTER)"
-                        + " VALUES (?, ?, ?, ?, ?)";
-                insertMessage(query, Message.INVITE_CODE, newInvite, null);
+                String query = "INSERT INTO InviteMessage(MEETINGNUMBER, DATEINSERTED, MEETINGTIME, TOPIC, REQUESTER,REQUESTNUMBER)"
+                        + " VALUES (?, ?, ?, ?, ?,?)";
+                insertMessage(query, Message.INVITE_CODE, newInvite, ((RequestMessage) obj).getRQ_NUMBER());
 
                 // if reservation was successful return Invite Message
                 return newInvite.printInvMessage() + " & "+((RequestMessage)obj).getLIST_OF_PARTICIPANTS();
@@ -380,7 +383,7 @@ public class Utility {
             }
 
         } else if (obj instanceof AcceptMessage) {
-            //Insert into the DB whoaccpted
+            //Insert into the DB whoaccepted
             AcceptMessage newAccept = new AcceptMessage(((AcceptMessage) obj).getMT_NUMBER());
             String query = "INSERT INTO AcceptMessage(MEETINGNUMBER, WHOACCEPTED)"
                     + " VALUES (?, ?)";
@@ -495,6 +498,9 @@ public class Utility {
 
     /* String format for DB */
     public static String fmtStrDB (String s) {
+        if(s =="")
+            return null;
+        else
         return "\'" + s + "\'";
     }
 
@@ -519,6 +525,7 @@ public class Utility {
                         + " WHERE WHO = " + Utility.fmtStrDB(myIp);
             }
             conn.prepareStatement(q2).execute();
+            conn.close();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
