@@ -1,4 +1,5 @@
 import java.io.IOException;
+import java.io.UTFDataFormatException;
 import java.math.RoundingMode;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
@@ -8,6 +9,7 @@ import java.text.ParseException;
 import java.util.*;
 
 public class UdpServer extends Utility {
+	private static DatagramSocket ds;
 	public static void main(String[] args) throws IOException, SQLException, Exception {
 
 		establishDBConnection();
@@ -24,12 +26,13 @@ public class UdpServer extends Utility {
 		// System.out.println("Please enter your IP address (server):");
 		// String IpAddress = myObj.nextLine();
 
-		DatagramSocket ds = new DatagramSocket(Integer.parseInt(Port));
+		ds = new DatagramSocket(Integer.parseInt(Port));
 		// InetAddress ipS = InetAddress.getByName(IpAddress);
 		InetAddress ipS = InetAddress.getByName(InetAddress.getLocalHost().getHostAddress());
 
 		// Queue that holds all the pending messages
 		PriorityQueue<String> pendingMessagesToBeTreated = new PriorityQueue<>();
+
 
 		Thread receivingTS = new Thread(new Runnable() {
 			@Override
@@ -87,16 +90,15 @@ public class UdpServer extends Utility {
 					while (itr.hasNext()) {
 						try {
 							Object currObj = itr.next();
-
 							// get the message and who sent it
 							String[] currMsg = currObj.toString().split("#");
-
 							// process the message
 							inp = Utility.processingServer(currMsg[0], ipS.toString(), getClientNameFromDB(currMsg[1])); // convert the
 							// String input into
 							// the byte array.
-
 							// send the user's input
+							System.out.println("End of thread");
+							pendingMessagesToBeTreated.remove(currObj);
 							System.out.println("Please Enter Your Inputs:");
 							if (inp != null) {
 								if (!inp.equals("Invalid Message")) {
@@ -105,9 +107,9 @@ public class UdpServer extends Utility {
 										String[] msgR = inp.split(" & ");
 										String msgToSend = msgR[0];
 										String[] lOP = msgR[1].replace("[", "").replace("]", "").split(",");
-										buf_s = msgToSend.getBytes();
+//										buf_s = msgToSend.getBytes();
 										for (int i = 0; i < lOP.length; i++) {
-											sendUdpPacket(buf_s, Port, ds, lOP[i]);
+											sendUdpPacket(msgToSend, getPortFromDB(lOP[i]), ds, lOP[i]);
 										}
 										if (inp.contains("2222")) {
 											TIMER(msgToSend, lOP, ds);
@@ -119,7 +121,7 @@ public class UdpServer extends Utility {
 										DatagramPacket DpSend = new DatagramPacket(buf_s, buf_s.length, ipC, getPortFromDB(currMsg[1]));
 										ds.send(DpSend);
 									}
-									pendingMessagesToBeTreated.remove(currObj);
+
 									if (inp.equals("bye"))
 										break;
 								}
@@ -147,7 +149,7 @@ public class UdpServer extends Utility {
 
 	/**
 	 * This to insert the client into the DB once he initializes communication
-	 * 
+	 *
 	 * @param ot
 	 */
 	private static void insertClientintoDB(String ot) throws SQLException {
@@ -163,7 +165,8 @@ public class UdpServer extends Utility {
 		// for debugging
 		System.out.println("Hostname:" + Hostname + "ListeningPort:" + ListeningPort + "IPAddress: " + IPAddress);
 		String query = "Insert into Registration(CLIENTNAME,IPADDRESS, LISTENINGPORT) VALUES("
-				+ Utility.fmtStrDB(Hostname) + "," + Utility.fmtStrDB(IPAddress) + "," + ListeningPort + ")";
+				+ Utility.fmtStrDB(Hostname) + "," + Utility.fmtStrDB(IPAddress) + "," + ListeningPort + ")"
+				+"ON CONFLICT(IPADDRESS) DO UPDATE SET "+"clientname= "+Utility.fmtStrDB(Hostname)+","+"listeningport= "+ListeningPort+";";
 
 		executedDB(query);
 	}
@@ -177,27 +180,28 @@ public class UdpServer extends Utility {
 
 	/**
 	 * This is to send a packet to the list of participants
-	 * 
+	 *
 	 * @param buf_s
 	 * @param port
 	 * @param ds
 	 * @param s
 	 * @throws IOException
 	 */
-	private static void sendUdpPacket(byte[] buf_s, String port, DatagramSocket ds, String s) throws IOException {
+	private static void sendUdpPacketStringPort(byte[] buf_s, String port, DatagramSocket ds, String s) throws IOException {
 		InetAddress ipLOP = InetAddress.getByName(s.trim());
 		DatagramPacket DpSend = new DatagramPacket(buf_s, buf_s.length, ipLOP, Integer.valueOf(port));
 		ds.send(DpSend);
 	}
 	/**
 	 * In case the port we fetch is integer instead of string which user in followuplogic for invite message
-	 * @param buf_s
+	 * @param msg
 	 * @param port
 	 * @param ds
 	 * @param s
 	 * @throws IOException
 	 */
-	private static void sendUdpPacket(byte[] buf_s, Integer port, DatagramSocket ds, String s) throws IOException {
+	private static void sendUdpPacket(String msg, Integer port, DatagramSocket ds, String s) throws IOException {
+		byte[] buf_s = msg.getBytes();
 		InetAddress ipLOP = InetAddress.getByName(s.trim());
 		DatagramPacket DpSend = new DatagramPacket(buf_s, buf_s.length, ipLOP, port);
 		ds.send(DpSend);
@@ -205,15 +209,15 @@ public class UdpServer extends Utility {
 
 	/**
 	 * This for the when we want to send invite messages
-	 * 
+	 *
 	 * @param msgToSend
 	 * @param lOP
 	 * @param ds
 	 */
 	private static void followUpLogicForInviteMessage(String msgToSend, String[] lOP, DatagramSocket ds) {
 		String[] msgArgs = msgToSend.replaceAll(" ", "").replaceAll(".+\\{", "").split("\\||\\}");
-		String q1 = "SELECT WHO" 
-				+ " FROM ParticipantsConfirmed" 
+		String q1 = "SELECT WHO"
+				+ " FROM ParticipantsConfirmed"
 				+ " WHERE MEETINGNUMBER = " + Utility.fmtStrDB(msgArgs[1]) + " AND CONFIRMED = TRUE";
 		String q2 = "SELECT REQUESTMESSAGE.REQUESTNUMBER , ROOMNUMBER , REQUESTER, MINIMUM  from INVITEMESSAGE"
 				+ " INNER JOIN ROOMRESERVATION ON INVITEMESSAGE.MEETINGNUMBER = ROOMRESERVATION.MEETINGNUMBER"
@@ -228,6 +232,10 @@ public class UdpServer extends Utility {
 			String[] queries = new String[2];
 
 			String lOfConfPart = "";
+			String Requestnumberquery = null;
+			String Minimumparticipants = null;
+			String Requester = null;
+			String Roomnumber = null;
 
 			if (res.next()) {
 				int result = 0;
@@ -237,47 +245,11 @@ public class UdpServer extends Utility {
 				{
 					lOfConfPart += "," + res.getString(1);
 				}
+
 				result = lOfConfPart.split(",").length;
 				if (res2.next()) {
-					// logic for the forming and sending the confirmation to list of participants
-					// and scheduled to requester
-					if (result >= Integer.valueOf(res2.getString(4))) {
 
-						// Queries
-						queries[0] = "INSERT INTO ScheduledMessage(REQUESTNUMBER, MEETINGNUMBER, ROOMNUMBER, LISTOFCONFIRMEDPARTICIPANTS)"
-								+ " VALUES (" + res2.getString(1) + "," + Utility.fmtStrDB(msgArgs[1]) + ", " + res2.getString(2) + "," + Utility.fmtStrDB(lOfConfPart)
-								+ ")";
-						queries[1] = "INSERT INTO ConfirmMessage(MEETINGNUMBER, ROOMNUMBER)" + " VALUES (" + Utility.fmtStrDB(msgArgs[1])
-						+ ", " + res2.getString(2) + ")";
 
-						// String RQ_NUMBER, String MT_NUMBER, String ROOM_NUMBER, ArrayList<String>
-						// LIST_OF_CONFIRMED_PARTICIPANTS
-						ScheduledMessage ScheduledMsg = new ScheduledMessage(res2.getString(1), msgArgs[1],
-								res2.getString(2), ListofParticipants);
-						// String MT_NUMBER, String ROOM_NUMBER
-						ConfirmMessage ConfirmMsg = new ConfirmMessage(msgArgs[1], res2.getString(2));
-						// send a message to the list of participants here
-						String currMsg = ScheduledMsg.printSchedMessage();
-						sendaConfirmorCancelMessagetoLOP(lOP, ds, currMsg);
-						// send a message to the requster/ send a message to the list of participants
-						// here
-						String currMsg2 = ConfirmMsg.printConfMessage();
-						String inp = Utility.processingServer(currMsg, res2.getString(3), null);
-						byte[] buf_s = inp.getBytes();
-						String[]arrayoflOfConfPart =lOfConfPart.split(",");
-						for(String s:arrayoflOfConfPart)
-						{sendUdpPacket(buf_s, getPortFromDB(s), ds, s);}
-						String inp2 = Utility.processingServer(currMsg2, res2.getString(3), null);
-						byte[] buf_s2 = inp2.getBytes();
-						sendUdpPacket(buf_s2, getPortFromDB(res2.getString(3)), ds, res2.getString(3));
-					}
-				}
-			} else {
-				String Requestnumberquery = null;
-				String Minimumparticipants = null;
-				String Requester = null;
-				String Roomnumber = null;
-				while (res2.next()) {
 					Requestnumberquery = res2.getString(1);
 					System.out.println(res2.getString(1) + "1");
 					Roomnumber =res2.getString(2);
@@ -287,7 +259,51 @@ public class UdpServer extends Utility {
 					Minimumparticipants = res2.getString(4);
 					System.out.println(res2.getString(4) + "4");
 
+
+					// logic for the forming and sending the confirmation to list of participants
+					// and scheduled to requester
+					System.out.println("Result is :" + result +"Minimum is:"+Minimumparticipants);
+					if (result >= Integer.valueOf(Minimumparticipants)) {
+
+						// Queries
+						queries[0] = "INSERT INTO ScheduledMessage(REQUESTNUMBER, MEETINGNUMBER, ROOMNUMBER, LISTOFCONFIRMEDPARTICIPANTS)"
+								+ " VALUES (" + Utility.fmtStrDB(Requestnumberquery) + "," + Utility.fmtStrDB(msgArgs[1]) + ", " + Utility.fmtStrDB(Roomnumber) + "," + Utility.fmtStrDB(lOfConfPart)
+								+ ")";
+						queries[1] = "INSERT INTO ConfirmMessage(MEETINGNUMBER, ROOMNUMBER)" + " VALUES (" + Utility.fmtStrDB(msgArgs[1])
+								+ ", " + Utility.fmtStrDB(Roomnumber) + ")";
+
+						// LIST_OF_CONFIRMED_PARTICIPANTS
+						ArrayList<String> ListofConfParticipants = new ArrayList<String>(Arrays.asList(lOfConfPart));
+						ScheduledMessage ScheduledMsg = new ScheduledMessage(Requestnumberquery, msgArgs[1], Roomnumber, ListofConfParticipants);
+						// String MT_NUMBER, String ROOM_NUMBER
+						ConfirmMessage ConfirmMsg = new ConfirmMessage(msgArgs[1], Roomnumber);
+
+						// Scheduled Message
+						String currMsg = ScheduledMsg.printSchedMessage();
+
+						// Confirm message
+						String currMsg2 = ConfirmMsg.printConfMessage();
+						String[]arrayoflOfConfPart =lOfConfPart.split(",");
+
+						//Send Message to list of Confirmed Participants
+						sendaConfirmorCancelMessagetoLOP(arrayoflOfConfPart, ds, currMsg2);
+
+						// send a message to the requester/ send a message to the list of participant
+						sendUdpPacket(currMsg, getPortFromDBByClientName(Requester), ds, Requester);
+					}
 				}
+			} else {
+				while (res2.next()) {
+					Requestnumberquery = res2.getString(1);
+					System.out.println(res2.getString(1) + "1");
+					Roomnumber =res2.getString(2);
+					System.out.println("Roomnumber is :" + Roomnumber);
+					Requester =res2.getString(3);
+					System.out.println("Requester is :" + Requester);
+					Minimumparticipants = res2.getString(4);
+					System.out.println(res2.getString(4) + "4");
+				}
+
 				System.out.println("First string is: "+Requestnumberquery+" Second string is:"+Minimumparticipants);
 				if (lOfConfPart == "")
 				{queries[0] = "INSERT INTO NotScheduledMessage(REQUESTNUMBER, DATEINSERTED, PROPOSEDTIME, MINIMUM, TOPIC)"
@@ -301,31 +317,25 @@ public class UdpServer extends Utility {
 					queries[1] = "INSERT INTO CancelMessage(MEETINGNUMBER, WHOCANCELED)" + " VALUES (" + Utility.fmtStrDB(msgArgs[1]) + "," + Utility.fmtStrDB(InetAddress.getLocalHost().getHostName()) + ")";
 				}
 
-				// String RQ_NUMBER, String MT_NUMBER, String ROOM_NUMBER, ArrayList<String>
 				// LIST_OF_CONFIRMED_PARTICIPANTS
 				ArrayList<String> ListofConfParticipants = new ArrayList<String>(Arrays.asList(lOfConfPart));
 				NotScheduledMessage NotScheduledMsg = new NotScheduledMessage(Requestnumberquery, msgArgs[2], msgArgs[3],
 						Integer.valueOf(Minimumparticipants), ListofConfParticipants, msgArgs[4]);
 				// String MT_NUMBER, String ROOM_NUMBER
 				CancelMessageI CancelMsg = new CancelMessageI(msgArgs[1]);
-				// Not schueled message
+
+				// NotScheduled message
 				String currMsg = NotScheduledMsg.printNotSchedMessage();
+
 				// Cancel Message
 				String currMsg2 = CancelMsg.printCancelIMessage();
-				byte[] buf_s = currMsg2.getBytes();
 				String[] arrayoflOfConfPart = lOfConfPart.split(",");
-				//Send Message to list of Confirmed Partipants
-				if (arrayoflOfConfPart.length == 0)
-				{}
-				else
-				{for (String s : arrayoflOfConfPart) {
-					if(!s.equals(""))
-					{sendUdpPacket(buf_s, getPortFromDB(s), ds, s);}
-				}}
-				// send a message to the requster/ send a message to the list of participant
-				byte[] buf_s2 = currMsg.getBytes();
-				sendUdpPacket(buf_s2, getPortFromDBByClientName(Requester), ds,Requester);
-				;
+
+				//Send Message to list of Confirmed Participants
+				sendaConfirmorCancelMessagetoLOP(arrayoflOfConfPart, ds, currMsg2);
+
+				// send a message to the requester/ send a message to the list of participant
+				sendUdpPacket(currMsg, getPortFromDBByClientName(Requester), ds,Requester);
 			}
 			Statement sts = conn.createStatement();
 			for (String s : queries) {
@@ -337,42 +347,41 @@ public class UdpServer extends Utility {
 			// TODO - make sure these messages are sent to the requester[0] or
 			// participants[1] accordingly
 
-		} catch (SQLException | IOException | ParseException ex) {
+		} catch (SQLException | IOException ex) {
 			ex.printStackTrace();
 		}
 	}
 
 	/**
 	 * ConfirmorCancelMessage to the list of participants
-	 * 
+	 *
 	 * @param lOP
 	 * @param ds
 	 * @param currMsg
 	 * @throws IOException
-	 * @throws ParseException
 	 * @throws SQLException
 	 */
-	private static void sendaConfirmorCancelMessagetoLOP(String[] lOP, DatagramSocket ds, String currMsg)
-			throws IOException, ParseException, SQLException {
-
+	public static void sendaConfirmorCancelMessagetoLOP(String[] lOP, DatagramSocket ds, String currMsg)
+			throws IOException, SQLException {
 		for (int i = 0; i < lOP.length; i++) {
-			System.out.println(lOP[i]);
-			InetAddress ipLOP = InetAddress.getByName(lOP[i].trim());
-			byte[] buf_s = currMsg.getBytes();
-			DatagramPacket DpSend = new DatagramPacket(buf_s, buf_s.length, ipLOP, getPortFromDB(Utility.fmtStrDB(lOP[i])));
-			ds.send(DpSend);
+			if(!lOP[i].equals("")) {
+				InetAddress ipLOP = InetAddress.getByName(lOP[i].trim());
+				byte[] buf_s = currMsg.getBytes();
+				DatagramPacket DpSend = new DatagramPacket(buf_s, buf_s.length, ipLOP, getPortFromDBByClientName(lOP[i]));
+				ds.send(DpSend);
+			}
 		}
 	}
 
 	/**
 	 * return the port of the IP Address
-	 * 
+	 *
 	 * @param s
 	 * @return
 	 * @throws SQLException
 	 */
 	private static Integer getPortFromDB(String s) throws SQLException {
-		String query = "SELECT LISTENINGPORT from REGISTRATION  WHERE IPADDRESS= " + s;
+		String query = "SELECT LISTENINGPORT from REGISTRATION  WHERE IPADDRESS= " + Utility.fmtStrDB(s);
 		try {
 			Connection conn = Utility.connect();
 			PreparedStatement pstmt = conn.prepareStatement(query);
@@ -411,7 +420,7 @@ public class UdpServer extends Utility {
 
 	/**
 	 * return the client name of the IP Address
-	 * 
+	 *
 	 * @param s
 	 * @return
 	 * @throws SQLException
@@ -435,7 +444,7 @@ public class UdpServer extends Utility {
 	/**
 	 * This for the timer whenever we send an invite message to the list of
 	 * participants
-	 * 
+	 *
 	 * @param msgToSend
 	 * @param lOP
 	 * @param ds
@@ -453,6 +462,10 @@ public class UdpServer extends Utility {
 			}
 		});
 		timer.start();
+	}
+
+	public static DatagramSocket getSocket(){
+		return ds;
 	}
 
 	/**

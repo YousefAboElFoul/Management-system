@@ -132,7 +132,7 @@ public class Utility {
         try (Connection conn = connect();
              PreparedStatement pstmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS))
         {
-            //Do parse our sql values
+            //Do parse our sql value
             PreparedStatement preparedStmt = conn.prepareStatement(query);
             SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
 
@@ -382,27 +382,116 @@ public class Utility {
                 return newResponse.printRespMessage();
             }
 
-        } else if (obj instanceof AcceptMessage) {
-            //Insert into the DB whoaccepted
+        }
+        else if (obj instanceof AcceptMessage) {
+
+            //Prepare the accept message
             AcceptMessage newAccept = new AcceptMessage(((AcceptMessage) obj).getMT_NUMBER());
-            String query = "INSERT INTO AcceptMessage(MEETINGNUMBER, WHOACCEPTED)"
-                    + " VALUES (?, ?)";
-            insertMessage(query, Message.ACCEPT_CODE, newAccept, null);
-            //TODO
-            //NEED to add to particpants confirmed as well
 
-        } else if (obj instanceof RejectMessage) {
-            //Insert into the DB whorejected
-            // the mysql insert statement
+            String q1 = "SELECT whorejected"
+                    + " FROM RejectMessage"
+                    + " WHERE MEETINGNUMBER = " + Utility.fmtStrDB(newAccept.getMT_NUMBER());
+            try (Connection conn = Utility.connect();
+                 PreparedStatement pstmt = conn.prepareStatement(q1);
+                 ResultSet res = pstmt.executeQuery()) {
+                String q2 = null;
+
+                if (!res.next()) {
+                    //Insert into the DB whoaccepted
+                    String queryA = "INSERT INTO AcceptMessage(MEETINGNUMBER, WHOACCEPTED)"
+                            + " VALUES (?, ?)";
+                    insertMessage(queryA, Message.ACCEPT_CODE, newAccept, requester);
+
+                    q2 = "INSERT INTO ParticipantsConfirmed (MEETINGNUMBER, WHO)"
+                            + " VALUES (" + Utility.fmtStrDB(newAccept.getMT_NUMBER()) + "," + Utility.fmtStrDB(requester) + ")";
+                } else { }
+                if ( q2 != null)
+                {
+                    PreparedStatement querystatement = conn.prepareStatement(q2);
+                    querystatement.execute();
+                    conn.close();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+
+        }
+        else if (obj instanceof RejectMessage) {
+
+            //Prepare the reject message
             RejectMessage newReject = new RejectMessage(((RejectMessage) obj).getMT_NUMBER());
-            String query = "INSERT INTO RejectMessage(MEETINGNUMBER, WHOREJECTED)"
-                    + " VALUES (?, ?)";
-            insertMessage(query, Message.REJECT_CODE, newReject, null);
-            //TODO
-            //NEED to add to particpants confirmed as well
 
-        } else if (obj instanceof CancelMessageII) {
-            //Cancel message
+            String q1 = "SELECT whoaccepted"
+                    + " FROM AcceptMessage"
+                    + " WHERE MEETINGNUMBER = " + Utility.fmtStrDB(newReject.getMT_NUMBER());
+            try (Connection conn = Utility.connect();
+                 PreparedStatement pstmt = conn.prepareStatement(q1);
+                 ResultSet res = pstmt.executeQuery()) {
+                String q2 = null;
+
+                if (!res.next()) {
+                    //Insert into the DB whorejected
+                    String queryR = "INSERT INTO RejectMessage(MEETINGNUMBER, WHOREJECTED)"
+                            + " VALUES (?, ?)";
+                    insertMessage(queryR, Message.REJECT_CODE, newReject, requester);
+
+                    q2 = "INSERT INTO ParticipantsConfirmed (MEETINGNUMBER, WHO, CONFIRMED)"
+                            + " VALUES (" + Utility.fmtStrDB(newReject.getMT_NUMBER()) + "," + Utility.fmtStrDB(requester) + false + ")";
+                } else { }
+                if ( q2 != null)
+                {
+                    PreparedStatement querystatement = conn.prepareStatement(q2);
+                    querystatement.execute();
+                    conn.close();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+
+        }
+        else if (obj instanceof CancelMessageII) {
+            //Prepare the cancel message
+            CancelMessageII newCancel = new CancelMessageII(((CancelMessageII) obj).getMT_NUMBER());
+
+            String q1 = "SELECT whoaccepted"
+                    + " FROM AcceptMessage"
+                    + " WHERE MEETINGNUMBER = " + Utility.fmtStrDB(newCancel.getMT_NUMBER());
+            try (Connection conn = Utility.connect();
+                 PreparedStatement pstmt = conn.prepareStatement(q1);
+                 ResultSet res = pstmt.executeQuery()) {
+                String q2 = null;
+                String q3 = null;
+                String lOfConfPart = "";
+                if (res.next()) {
+
+                    lOfConfPart += res.getString(1);
+                    while (res.next())
+                    {
+                        lOfConfPart += "," + res.getString(1);
+                    }
+                    String[] result = lOfConfPart.split(",");
+                    UdpServer.sendaConfirmorCancelMessagetoLOP(result,UdpServer.getSocket(),newCancel.printCancelIIMessage());
+                    //Insert into the DB who caneled
+                    String queryA = "INSERT INTO CancelMessage(MEETINGNUMBER, WHOCANCELED)"
+                            + " VALUES (?, ?)";
+                    insertMessage(queryA, Message.CANCEL_2_CODE, newCancel, requester);
+
+                    q2 = "UPDATE ParticipantsConfirmed SET confirmed = false WHERE meetingnumber =" + Utility.fmtStrDB(newCancel.getMT_NUMBER());
+                    q3 = "DELETE FROM ROOMRESERVATION WHERE MEETINGNUMBER =" + Utility.fmtStrDB(newCancel.getMT_NUMBER());
+
+                } else { }
+                if ( q2 != null)
+                {
+                    PreparedStatement querystatement = conn.prepareStatement(q2);
+                    querystatement.execute();
+                    PreparedStatement querystatement2 = conn.prepareStatement(q3);
+                    querystatement2.execute();
+                    conn.close();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+
         } else if (obj instanceof WithdrawMessageII) {
             // Insert into DB who
 
