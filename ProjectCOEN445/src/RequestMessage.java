@@ -18,7 +18,7 @@ public class RequestMessage {
     private static int curr_rq_num = 1;
 
     // The ip of the system running the udpClient
-    String myIp = InetAddress.getLocalHost().getHostAddress();
+    String myIp = InetAddress.getLocalHost().getHostName();
 
 
     public RequestMessage(String in, String RQ_DATE, String RQ_TIME, int MIN_NUMBER_OF_PARTICIPANTS, ArrayList<String> LIST_OF_PARTICIPANTS, String RQ_TOPIC) throws UnknownHostException {

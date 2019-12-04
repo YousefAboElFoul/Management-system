@@ -44,47 +44,23 @@ public class Utility {
                     break;
                 case Message.ACCEPT_CODE:
                     messageReceived = (T) new AcceptMessage(txt[1]);
-
-                    // the mysql insert statement
-                    query = "INSERT INTO AcceptMessage(MEETINGNUMBER, WHOACCEPTED)"
-                            + " VALUES (?, ?)";
                     break;
                 case Message.REJECT_CODE:
                     messageReceived = (T) new RejectMessage(txt[1]);
-
-                    // the mysql insert statement
-                    query = "INSERT INTO RejectMessage(MEETINGNUMBER, WHOREJECTED)"
-                            + " VALUES (?, ?)";
                     break;
                 case Message.CONFIRM_CODE:
                     messageReceived = (T) new ConfirmMessage(txt[1], txt[2]);
-
-                    // the mysql insert statement
-                    query = "INSERT INTO ConfirmMessage(MEETINGNUMBER, ROOMNUMBER)"
-                            + " VALUES (?, ?)";
                     break;
                 case Message.SCHEDULED_CODE:
                     ArrayList<String> conf_list = getParticipantsStrings(txt[4]);
                     messageReceived = (T) new ScheduledMessage(txt[1], txt[2], txt[3], conf_list);
-
-                    // the mysql insert statement
-                    query = "INSERT INTO ScheduledMessage(REQUESTNUMBER, MEETINGNUMBER, ROOMNUMBER, LISTOFCONFIRMEDPARTICIPANTS)"
-                            + " VALUES (?, ?, ?, ?)";
                     break;
                 case Message.CANCEL_1_CODE:
                     messageReceived = (T) new CancelMessageI(txt[1]);
-
-                    // the mysql insert statement
-                    query = "INSERT INTO CancelMessage(MEETINGNUMBER, WHOCANCELED)"
-                            + " VALUES (?, ?)";
                     break;
                 case Message.NOT_SCHEDULED_CODE:
                     ArrayList<String> nscheq_list = getParticipantsStrings(txt[5]);
                     messageReceived = (T) new NotScheduledMessage(txt[1], txt[2], txt[3], Integer.valueOf(txt[4]), nscheq_list, txt[6]);
-
-                    // the mysql insert statement
-                    query = "INSERT INTO NotScheduledMessage(REQUESTNUMBER, DATEINSERTED, PROPOSEDTIME, MINIMUM, LISTOFCONFIRMEDPARTICIPANTS, TOPIC)"
-                            + " VALUES (?, ?, ?, ?, ?, ?)";
                     break;
                 case Message.CANCEL_2_CODE:
                     messageReceived = (T) new CancelMessageII(txt[1]);
@@ -156,7 +132,7 @@ public class Utility {
         try (Connection conn = connect();
              PreparedStatement pstmt = conn.prepareStatement(query, Statement.RETURN_GENERATED_KEYS))
         {
-            //Do parse our sql values
+            //Do parse our sql value
             PreparedStatement preparedStmt = conn.prepareStatement(query);
             SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
 
@@ -166,7 +142,7 @@ public class Utility {
                     preparedStmt.setDate(2, new java.sql.Date(format.parse(((RequestMessage) message).getRQ_DATE()).getTime()));
                     preparedStmt.setTime(3, Time.valueOf(LocalTime.parse(((RequestMessage) message).getRQ_TIME())));
                     preparedStmt.setInt(4, ((RequestMessage) message).getMIN_NUMBER_OF_PARTICIPANTS());
-                    preparedStmt.setString(5, ((RequestMessage) message).getLIST_OF_PARTICIPANTS().toString());
+                    preparedStmt.setString(5, ((RequestMessage) message).getLIST_OF_PARTICIPANTS().toString().replace("[[", "").replace("]]", ""));
                     preparedStmt.setString(6, ((RequestMessage) message).getRQ_TOPIC());
                     break;
                 case Message.RESPONSE_CODE:
@@ -178,6 +154,7 @@ public class Utility {
                     preparedStmt.setTime(3, Time.valueOf(LocalTime.parse(((InviteMessage) message).getIV_TIME())));
                     preparedStmt.setString(4, ((InviteMessage) message).getIV_TOPIC());
                     preparedStmt.setString(5, ((InviteMessage) message).getIV_REQUESTER());
+                    preparedStmt.setString(6, from);
                     break;
                 case Message.ACCEPT_CODE:
                     preparedStmt.setString(1, ((AcceptMessage) message).getMT_NUMBER());
@@ -231,6 +208,7 @@ public class Utility {
 
             // execute the preparedstatement
             preparedStmt.execute();
+            conn.close();
         }
         catch (SQLException | ParseException ex) {
             System.out.println(ex.getMessage());
@@ -283,6 +261,7 @@ public class Utility {
 
             // execute the preparedstatement
             preparedStmt.executeUpdate();
+            conn.close();
         }
         catch (SQLException ex) {
             System.out.println(ex.getMessage());
@@ -379,12 +358,12 @@ public class Utility {
 
             if (isReserved) {
                 // the mysql insert statement
-                String query = "INSERT INTO InviteMessage(MEETINGNUMBER, DATEINSERTED, MEETINGTIME, TOPIC, REQUESTER)"
-                        + " VALUES (?, ?, ?, ?, ?)";
-                insertMessage(query, Message.INVITE_CODE, newInvite, null);
+                String query = "INSERT INTO InviteMessage(MEETINGNUMBER, DATEINSERTED, MEETINGTIME, TOPIC, REQUESTER,REQUESTNUMBER)"
+                        + " VALUES (?, ?, ?, ?, ?,?)";
+                insertMessage(query, Message.INVITE_CODE, newInvite, ((RequestMessage) obj).getRQ_NUMBER());
 
                 // if reservation was successful return Invite Message
-                return newInvite.printInvMessage();
+                return newInvite.printInvMessage() + " & "+((RequestMessage)obj).getLIST_OF_PARTICIPANTS();
 
                 //TODO to be continued, make sure the remaining logic is implemented
                 //Check if the minimum number of participants have accepted.
@@ -403,13 +382,123 @@ public class Utility {
                 return newResponse.printRespMessage();
             }
 
-        } else if (obj instanceof AcceptMessage) {
+        }
+        else if (obj instanceof AcceptMessage) {
 
-        } else if (obj instanceof RejectMessage) {
-        } else if (obj instanceof CancelMessageII) {
+            //Prepare the accept message
+            AcceptMessage newAccept = new AcceptMessage(((AcceptMessage) obj).getMT_NUMBER());
+
+            String q1 = "SELECT whorejected"
+                    + " FROM RejectMessage"
+                    + " WHERE MEETINGNUMBER = " + Utility.fmtStrDB(newAccept.getMT_NUMBER());
+            try (Connection conn = Utility.connect();
+                 PreparedStatement pstmt = conn.prepareStatement(q1);
+                 ResultSet res = pstmt.executeQuery()) {
+                String q2 = null;
+
+                if (!res.next()) {
+                    //Insert into the DB whoaccepted
+                    String queryA = "INSERT INTO AcceptMessage(MEETINGNUMBER, WHOACCEPTED)"
+                            + " VALUES (?, ?)";
+                    insertMessage(queryA, Message.ACCEPT_CODE, newAccept, requester);
+
+                    q2 = "INSERT INTO ParticipantsConfirmed (MEETINGNUMBER, WHO)"
+                            + " VALUES (" + Utility.fmtStrDB(newAccept.getMT_NUMBER()) + "," + Utility.fmtStrDB(requester) + ")";
+                } else { }
+                if ( q2 != null)
+                {
+                    PreparedStatement querystatement = conn.prepareStatement(q2);
+                    querystatement.execute();
+                    conn.close();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+
+        }
+        else if (obj instanceof RejectMessage) {
+
+            //Prepare the reject message
+            RejectMessage newReject = new RejectMessage(((RejectMessage) obj).getMT_NUMBER());
+
+            String q1 = "SELECT whoaccepted"
+                    + " FROM AcceptMessage"
+                    + " WHERE MEETINGNUMBER = " + Utility.fmtStrDB(newReject.getMT_NUMBER());
+            try (Connection conn = Utility.connect();
+                 PreparedStatement pstmt = conn.prepareStatement(q1);
+                 ResultSet res = pstmt.executeQuery()) {
+                String q2 = null;
+
+                if (!res.next()) {
+                    //Insert into the DB whorejected
+                    String queryR = "INSERT INTO RejectMessage(MEETINGNUMBER, WHOREJECTED)"
+                            + " VALUES (?, ?)";
+                    insertMessage(queryR, Message.REJECT_CODE, newReject, requester);
+
+                    q2 = "INSERT INTO ParticipantsConfirmed (MEETINGNUMBER, WHO, CONFIRMED)"
+                            + " VALUES (" + Utility.fmtStrDB(newReject.getMT_NUMBER()) + "," + Utility.fmtStrDB(requester) + false + ")";
+                } else { }
+                if ( q2 != null)
+                {
+                    PreparedStatement querystatement = conn.prepareStatement(q2);
+                    querystatement.execute();
+                    conn.close();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+
+        }
+        else if (obj instanceof CancelMessageII) {
+            //Prepare the cancel message
+            CancelMessageII newCancel = new CancelMessageII(((CancelMessageII) obj).getMT_NUMBER());
+
+            String q1 = "SELECT whoaccepted"
+                    + " FROM AcceptMessage"
+                    + " WHERE MEETINGNUMBER = " + Utility.fmtStrDB(newCancel.getMT_NUMBER());
+            try (Connection conn = Utility.connect();
+                 PreparedStatement pstmt = conn.prepareStatement(q1);
+                 ResultSet res = pstmt.executeQuery()) {
+                String q2 = null;
+                String q3 = null;
+                String lOfConfPart = "";
+                if (res.next()) {
+
+                    lOfConfPart += res.getString(1);
+                    while (res.next())
+                    {
+                        lOfConfPart += "," + res.getString(1);
+                    }
+                    String[] result = lOfConfPart.split(",");
+                    UdpServer.sendaConfirmorCancelMessagetoLOP(result,UdpServer.getSocket(),newCancel.printCancelIIMessage());
+                    //Insert into the DB who caneled
+                    String queryA = "INSERT INTO CancelMessage(MEETINGNUMBER, WHOCANCELED)"
+                            + " VALUES (?, ?)";
+                    insertMessage(queryA, Message.CANCEL_2_CODE, newCancel, requester);
+
+                    q2 = "UPDATE ParticipantsConfirmed SET confirmed = false WHERE meetingnumber =" + Utility.fmtStrDB(newCancel.getMT_NUMBER());
+                    q3 = "DELETE FROM ROOMRESERVATION WHERE MEETINGNUMBER =" + Utility.fmtStrDB(newCancel.getMT_NUMBER());
+
+                } else { }
+                if ( q2 != null)
+                {
+                    PreparedStatement querystatement = conn.prepareStatement(q2);
+                    querystatement.execute();
+                    PreparedStatement querystatement2 = conn.prepareStatement(q3);
+                    querystatement2.execute();
+                    conn.close();
+                }
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
+
         } else if (obj instanceof WithdrawMessageII) {
+            // Insert into DB who
+
         } else if (obj instanceof AddMessage) {
+            //Add people who were invited
         } else if (obj instanceof RoomChangeMessage) {
+            //maintance
         } else {
         }
         return null;
@@ -498,6 +587,9 @@ public class Utility {
 
     /* String format for DB */
     public static String fmtStrDB (String s) {
+        if(s =="")
+            return null;
+        else
         return "\'" + s + "\'";
     }
 
@@ -522,6 +614,7 @@ public class Utility {
                         + " WHERE WHO = " + Utility.fmtStrDB(myIp);
             }
             conn.prepareStatement(q2).execute();
+            conn.close();
         } catch (SQLException ex) {
             ex.printStackTrace();
         }

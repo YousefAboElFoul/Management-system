@@ -32,10 +32,10 @@ CREATE TABLE RoomReservation(
 CREATE TABLE Registration(
                              ID SERIAL PRIMARY KEY NOT NULL,
                              CLIENTNAME VARCHAR(255) NOT NULL,
-                             IPADRESS VARCHAR(255) NOT NULL,
+                             IPADDRESS VARCHAR(255) NOT NULL,
                              LISTENINGPORT INT DEFAULT 44445,
                              CONSTRAINT Registration_c_uk UNIQUE (CLIENTNAME),
-                             CONSTRAINT Registration_i_uk UNIQUE (IPADRESS)
+                             CONSTRAINT Registration_i_uk UNIQUE (IPADDRESS)
 );
 
 CREATE TABLE InviteMessage(

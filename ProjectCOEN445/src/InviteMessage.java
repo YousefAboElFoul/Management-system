@@ -16,7 +16,7 @@ public class InviteMessage {
     private static int curr_mt_num = 1;
 
     // The ip of the system running the udpClient
-    String myIp = InetAddress.getLocalHost().getHostAddress();
+    String myIp = InetAddress.getLocalHost().getHostName();
 
     public InviteMessage(String in, String IV_DATE, String IV_TIME, String IV_TOPIC, String IV_REQUESTER) throws UnknownHostException {
         if (in.contains("-")) {
@@ -25,6 +25,7 @@ public class InviteMessage {
         }
         else {
             // use this notation on the client side
+        	System.out.println(myIp);
             this.MT_NUMBER = in + "-" + Utility.messageCount(myIp, curr_mt_num);
         }
         this.IV_DATE = IV_DATE;
