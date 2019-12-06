@@ -1,5 +1,6 @@
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.sql.SQLException;
 import java.util.Date;
 
 public class InviteMessage {
@@ -18,7 +19,7 @@ public class InviteMessage {
     // The ip of the system running the udpClient
     String myIp = InetAddress.getLocalHost().getHostName();
 
-    public InviteMessage(String in, String IV_DATE, String IV_TIME, String IV_TOPIC, String IV_REQUESTER) throws UnknownHostException {
+    public InviteMessage(String in, String IV_DATE, String IV_TIME, String IV_TOPIC, String IV_REQUESTER) throws UnknownHostException, SQLException {
         if (in.contains("-")) {
             // use this notation on the server side
             this.MT_NUMBER = in;
@@ -26,7 +27,7 @@ public class InviteMessage {
         else {
             // use this notation on the client side
         	System.out.println(myIp);
-            this.MT_NUMBER = in + "-" + Utility.messageCount(myIp, curr_mt_num);
+            this.MT_NUMBER = Utility.getClientNameFromDB(in) + "-" + Utility.messageCount(myIp, curr_mt_num);
         }
         this.IV_DATE = IV_DATE;
         this.IV_TIME = IV_TIME;

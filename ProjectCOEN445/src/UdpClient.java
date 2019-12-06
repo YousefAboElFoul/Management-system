@@ -4,10 +4,9 @@ import java.net.DatagramSocket;
 import java.net.InetAddress;
 import java.util.Scanner;
 
-public class UdpClient
-{
-    public static void main(String args[]) throws Exception
-    {
+public class UdpClient extends Utility {
+
+    public static void main(String args[]) throws Exception {
         // Configuration
         System.out.println("Starting UDP CLIENT");
 
@@ -18,13 +17,15 @@ public class UdpClient
         String Port = myObj.nextLine();
 
         System.out.println("Please enter the IP address of the server:");
-        String IpAddress = myObj.nextLine();
+        String ipS = myObj.nextLine();
 
         DatagramSocket ds = new DatagramSocket();
-        InetAddress ipS = InetAddress.getByName(IpAddress);
         String myIp = InetAddress.getLocalHost().getHostAddress();
 
 
+        /**
+         * Sending Thread
+         */
         Thread sendingTC = new Thread( new Runnable() {
             @Override
             public void run() {
@@ -34,9 +35,9 @@ public class UdpClient
                     String inp = null;
                     byte buf[] = null;
 
-                    //Intialize communication with the Server
+                    // Initialize communication with the Server
                     try {
-                        sendHiMessagetotheServer(ds ,ipS, Port);
+                        sendHiMessageToTheServer(ds ,ipS, Port);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
@@ -45,16 +46,18 @@ public class UdpClient
                     System.out.println("Please Input your inputs");
 
                     try {
-                        inp = Utility.getUserInput(sc.nextLine(), myIp); // convert the String input into the byte array.
+                        // convert the String input into the byte array
+                        inp = Utility.getUserInput(sc.nextLine(), myIp);
+
                         // send the user's input
                         while (!inp.equals("Invalid Message")) {
 
-                            buf = inp.getBytes();
-                            DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ipS, Integer.parseInt(Port));
-                            ds.send(DpSend);
+                            // send a message to the server
+                            sendUdpPacket(inp, Integer.parseInt(Port), ds, ipS);
 
                             System.out.println("Please Input your inputs");
                             inp = Utility.getUserInput(sc.nextLine(), myIp); // convert the String input into the byte array.
+
                             // break the loop if user enters "bye"
                             if (inp.equals("bye"))
                                 break;
@@ -70,6 +73,9 @@ public class UdpClient
             }
         });
 
+        /**
+         *  Receiving Thread
+         */
         Thread receivingTC = new Thread( new Runnable() {
             @Override
             public void run() {
@@ -112,11 +118,11 @@ public class UdpClient
      * @param ipS
      * @param port
      */
-    private static void sendHiMessagetotheServer(DatagramSocket ds, InetAddress ipS, String port) throws IOException {
-        String hiMessage = "/ Hi Server, My hostname is " + InetAddress.getByName(InetAddress.getLocalHost().getHostName());
-        byte buf[] = hiMessage.getBytes();
-        DatagramPacket DpSend = new DatagramPacket(buf, buf.length, ipS, Integer.parseInt(port));
-        ds.send(DpSend);
+    private static void sendHiMessageToTheServer(DatagramSocket ds, String ipS, String port) throws IOException {
+        String hiMessage = "/Hi Server, My hostname is " + InetAddress.getByName(InetAddress.getLocalHost().getHostName());
+
+        // send a message to the server
+        sendUdpPacket(hiMessage, Integer.parseInt(port), ds, ipS);
     }
 
 }
