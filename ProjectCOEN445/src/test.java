@@ -12,6 +12,9 @@ public class test {
         InetAddress myIp = InetAddress.getLocalHost();
         System.out.println(myIp.toString());
 
+        String msg = "Hey I am Mario";
+        System.out.println(msg.getBytes().length);
+
         Date dr = new Date(d);
 //        dr.setTime(t);
 //        System.out.println(dr.getHours()+":"+dr.getMinutes());

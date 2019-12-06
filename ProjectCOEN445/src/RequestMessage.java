@@ -1,5 +1,6 @@
 import java.net.InetAddress;
 import java.net.UnknownHostException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -21,14 +22,14 @@ public class RequestMessage {
     String myIp = InetAddress.getLocalHost().getHostName();
 
 
-    public RequestMessage(String in, String RQ_DATE, String RQ_TIME, int MIN_NUMBER_OF_PARTICIPANTS, ArrayList<String> LIST_OF_PARTICIPANTS, String RQ_TOPIC) throws UnknownHostException {
+    public RequestMessage(String in, String RQ_DATE, String RQ_TIME, int MIN_NUMBER_OF_PARTICIPANTS, ArrayList<String> LIST_OF_PARTICIPANTS, String RQ_TOPIC) throws UnknownHostException, SQLException {
         if (in.contains("-")) {
             // use this notation on the server side
             this.RQ_NUMBER = in;
         }
         else {
             // use this notation on the client side and save the state
-            this.RQ_NUMBER = in + "-" + Utility.messageCount(myIp, curr_rq_num);
+            this.RQ_NUMBER = Utility.getClientNameFromDB(in) + "-" + Utility.messageCount(myIp, curr_rq_num);
         }
         this.RQ_DATE = RQ_DATE;
         this.RQ_TIME = RQ_TIME;
