@@ -29,7 +29,7 @@ public class RequestMessage {
         }
         else {
             // use this notation on the client side and save the state
-            this.RQ_NUMBER = Utility.getClientNameFromDB(in) + "-" + Utility.messageCount(myIp, curr_rq_num);
+            this.RQ_NUMBER = Utility.getClientNameFromDB(in) + "-" + Utility.messageCount(myIp, curr_rq_num, true);
         }
         this.RQ_DATE = RQ_DATE;
         this.RQ_TIME = RQ_TIME;

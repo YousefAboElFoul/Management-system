@@ -75,10 +75,6 @@ public class Utility {
                     break;
                 case Message.WITHDRAW_2_CODE:
                     messageReceived = (T) new WithdrawMessageII(txt[1]);
-
-                    // the mysql insert statement
-                    query = "INSERT INTO WithdrawMessage(MEETINGNUMBER, WHOWITHDRAWED)"
-                            + " VALUES (?, ?)";
                     break;
                 case Message.ADD_CODE:
                     messageReceived = (T) new AddMessage(txt[1]);
@@ -115,7 +111,8 @@ public class Utility {
             if (mCode == Message.ADDED_CODE)
                 updateMessage(query, mCode, messageReceived, from);
             else if (mCode != Message.ADDED_CODE || mCode != Message.INVITE_CODE
-                    || mCode != Message.RESPONSE_CODE || mCode != Message.CANCEL_2_CODE)
+                    || mCode != Message.RESPONSE_CODE || mCode != Message.CANCEL_2_CODE
+                    || mCode != Message.WITHDRAW_2_CODE)
                 insertMessage(query, mCode, messageReceived, from);
         }
 
@@ -361,14 +358,19 @@ public class Utility {
                         + " VALUES (?, ?, ?, ?, ?,?)";
                 insertMessage(query, Message.INVITE_CODE, newInvite, ((RequestMessage) obj).getRQ_NUMBER());
 
-                // if reservation was successful return Invite Message
-                return newInvite.printInvMessage() + " & "+((RequestMessage)obj).getLIST_OF_PARTICIPANTS();
+                String list = ((RequestMessage)obj).getLIST_OF_PARTICIPANTS().toString();
+                String[] lOP = list.replace("[", "").replace("]", "").split(",");
 
-                //TODO to be continued, make sure the remaining logic is implemented
-                //Check if the minimum number of participants have accepted.
-                //If yes then confirm.
+                String msgToSend = newInvite.printInvMessage();
+                // send Message to list of Confirmed Participants
+                sendUdpPacketToLOP(lOP, UdpServer.getSocket(), msgToSend);
+
+                TIMER(msgToSend, UdpServer.getSocket(), 1);
             }
             else {
+                // reset the invite count to the previous value
+                int cache = messageCount(server, newInvite.getCURR_MT_NUM(), false);
+
                 // Create a response message
                 ResponseMessage newResponse = new ResponseMessage(((RequestMessage) obj).getRQ_NUMBER());
 
@@ -377,8 +379,11 @@ public class Utility {
                         + " VALUES (?)";
                 insertMessage(query, Message.RESPONSE_CODE, newResponse, null);
 
-                // if reservation was not successful return Response Message
-                return newResponse.printRespMessage();
+                String msgToSend = newResponse.printRespMessage();
+
+                // send a message to the requester if reservation was not successful return Response Message
+                sendUdpPacket(msgToSend, getPortByClientName(requester), UdpServer.getSocket(), requester);
+
             }
 
         }
@@ -437,8 +442,7 @@ public class Utility {
                     q2 = "INSERT INTO ParticipantsConfirmed (MEETINGNUMBER, WHO, CONFIRMED)"
                             + " VALUES (" + fmtStrDB(newReject.getMT_NUMBER()) + "," + fmtStrDB(requester) + false + ")";
                 } else { }
-                if ( q2 != null)
-                {
+                if ( q2 != null) {
                     PreparedStatement querystatement = conn.prepareStatement(q2);
                     querystatement.execute();
                     conn.close();
@@ -506,12 +510,111 @@ public class Utility {
 
         }
         else if (obj instanceof WithdrawMessageII) {
-            // Insert into DB who
-            // TODO - check if the he is part of the list of confirmed participants in the request message
-            // TODO - remove him from the list(mentioned above)
-            // TODO - change his local agenda
-            // TODO - check if the minimum number of participants has been broken (then use followUpfuntion)
-            // TODO - send a message to the requester (added) and update the local agenda
+            //Prepare the reject message
+            WithdrawMessageII newWithdrawC = new WithdrawMessageII(((WithdrawMessageII) obj).getMT_NUMBER());
+            String newWithdrawS = new WithdrawMessageI(newWithdrawC.getMT_NUMBER(), requester).printWithdrawIMessage();
+
+            // get the requester and the minimum number of participants
+            String q1="SELECT DATEINSERTED, MEETINGTIME, TOPIC, REQUESTER, MINIMUM"
+                    + " FROM InviteMessage"
+                    + " INNER JOIN REQUESTMESSAGE ON INVITEMESSAGE.REQUESTNUMBER = REQUESTMESSAGE.REQUESTNUMBER"
+                    + " WHERE MEETINGNUMBER=" + fmtStrDB(newWithdrawC.getMT_NUMBER());
+            // get all the confirmed participants for that meeting
+            String q2 = "SELECT WHO"
+                    + " FROM ParticipantsConfirmed"
+                    + " WHERE MEETINGNUMBER = " + fmtStrDB(newWithdrawC.getMT_NUMBER())
+                    + " AND CONFIRMED = TRUE";
+            // get those who never accepted the invitation
+            String q3 = "SELECT WHO"
+                    + " FROM ParticipantsConfirmed"
+                    + " WHERE MEETINGNUMBER = " + fmtStrDB(newWithdrawC.getMT_NUMBER())
+                    + " AND CONFIRMED = FALSE";
+            try(Connection conn = connect();
+                PreparedStatement pstmt = conn.prepareStatement(q1);
+                PreparedStatement pstmt2 = conn.prepareStatement(q2);
+                PreparedStatement pstmt3 = conn.prepareStatement(q3);
+                ResultSet res = pstmt.executeQuery();
+                ResultSet res2 = pstmt2.executeQuery();
+                ResultSet res3 = pstmt3.executeQuery()){
+
+                String[] queries = new String[2];
+
+                String lOfConfPart = "";
+                int minimum_ = -1;
+                String date_ = null;
+                String time_ = null;
+                String topic_ = null;
+                String requester_ = null;
+
+                // Do this block if he is not the requester
+                if (res.next() && res2.next()) {
+                    int numOfConfPart = 0;
+
+                    lOfConfPart += res2.getString(1);
+
+                    while (res2.next()) {
+                        lOfConfPart += "," + res2.getString(1);
+                    }
+
+                    SimpleDateFormat dateFormat = new SimpleDateFormat("MM/dd/yyyy");
+                    SimpleDateFormat timeFormat = new SimpleDateFormat("HH:mm");
+
+                    numOfConfPart = lOfConfPart.split(",").length;
+                    date_ = dateFormat.format(res.getDate(1));
+                    time_ = timeFormat.format(res.getTime(2));
+                    topic_ = res.getString(3);
+                    requester_ = res.getString(4);
+                    minimum_ = res.getInt(5);
+
+                    if(!requester.equals(requester_) && lOfConfPart.contains(requester)) {
+                        //Insert into the DB whowithdrew
+                        String queryW = "INSERT INTO WithdrawMessage(MEETINGNUMBER, WHOWITHDRAWED)"
+                                + " VALUES (?, ?)";
+                        insertMessage(queryW, Message.WITHDRAW_2_CODE, newWithdrawC, requester);
+
+                        queries[0] = "DELETE FROM ParticipantsConfirmed"
+                                + " WHERE MEETINGNUMBER = " + fmtStrDB(newWithdrawC.getMT_NUMBER())
+                                + " AND WHO = " + fmtStrDB(requester);
+                        queries[1] = "DELETE FROM Bookings"
+                                + " WHERE MEETINGNUMBER = " + fmtStrDB(newWithdrawC.getMT_NUMBER())
+                                + " AND WHO = " + fmtStrDB(requester);
+
+                        Statement sts = conn.createStatement();
+                        for (String s : queries) {
+                            sts.addBatch(s);
+                        }
+                        sts.executeBatch();
+
+                        sendUdpPacket(newWithdrawS, getPortByClientName(requester_), UdpServer.getSocket(), requester_);
+
+                        if (numOfConfPart - 1 < minimum_) {
+
+                            String lOfNotConfPart = "";
+                            if (res3.next()) {
+                                lOfNotConfPart += res2.getString(1);
+
+                                while (res3.next()) {
+                                    lOfNotConfPart += "," + res2.getString(1);
+                                }
+                            }
+
+                            // Retrieve the invite message
+                            InviteMessage newInvite = new InviteMessage(newWithdrawC.getMT_NUMBER(), date_, time_, topic_, requester_);
+
+                            String msgToSend = newInvite.printInvMessage();
+
+                            // send Message to list of Confirmed Participants
+                            sendUdpPacketToLOP(lOfNotConfPart.split(","), UdpServer.getSocket(), msgToSend);
+
+                            TIMER(msgToSend, UdpServer.getSocket(), 2);
+                        }
+                    }
+                } else { }
+                conn.close();
+                
+            } catch (SQLException ex) {
+                ex.printStackTrace();
+            }
 
         } else if (obj instanceof AddMessage) {
             //Add people who were invited
@@ -558,7 +661,7 @@ public class Utility {
     }
 
     /* Updates the count for every request/meeting number and save its state */
-    public static int messageCount(String myIp, int ct) {
+    public static int messageCount(String myIp, int ct, boolean increment) {
         String q1 = "SELECT MCOUNT"
                 + " FROM MessageCount"
                 + " WHERE WHO = " + fmtStrDB(myIp);
@@ -572,7 +675,7 @@ public class Utility {
                         + " VALUES (" + fmtStrDB(myIp) + ")";
             } else {
                 String result = res.getString(1);
-                ct = Integer.parseInt(result) + 1;
+                ct = (increment) ? Integer.parseInt(result) + 1 : Integer.parseInt(result) - 1;
                 q2 = "UPDATE MessageCount"
                         + " SET MCOUNT = " + fmtStrDB(String.valueOf(ct))
                         + " WHERE WHO = " + fmtStrDB(myIp);
@@ -614,7 +717,7 @@ public class Utility {
      * @param msgToSend
      * @param ds
      */
-    public static void followUpLogicForInviteMessage(String msgToSend, DatagramSocket ds) {
+    public static void followUpLogicForInviteMessage(String msgToSend, DatagramSocket ds, int option) {
         String[] msgArgs = msgToSend.replaceAll(" ", "").replaceAll(".+\\{", "").split("\\||\\}");
 
         String q1 = "SELECT WHO"
@@ -640,7 +743,7 @@ public class Utility {
             String Requester = null;
             String Roomnumber = null;
 
-            if (res.next()) {
+            if (res.next() && option == 1) {
                 int numOfConfPart = 0;
 
                 lOfConfPart += res.getString(1);
@@ -692,51 +795,47 @@ public class Utility {
                         //Send Message to list of Confirmed Participants
                         sendUdpPacketToLOP(arrayoflOfConfPart, ds, currMsg2);
 
-                        // send a message to the requester/ send a message to the list of participant
+                        // send a message to the requester
                         sendUdpPacket(currMsg, getPortByClientName(Requester), ds, Requester);
                     }
                 }
             } else {
-                while (res2.next()) {
-                    Requestnumberquery = res2.getString(1);
-//                    System.out.println(res2.getString(1) + "1");
-                    Roomnumber =res2.getString(2);
-//                    System.out.println("Roomnumber is :" + Roomnumber);
-                    Requester =res2.getString(3);
-//                    System.out.println("Requester is :" + Requester);
-                    Minimumparticipants = res2.getString(4);
-//                    System.out.println(res2.getString(4) + "4");
-                }
-
-                System.out.println("First string is: "+Requestnumberquery+" Second string is:"+Minimumparticipants);
-                if (lOfConfPart == "") {
-                    queries[0] = "INSERT INTO NotScheduledMessage(REQUESTNUMBER, DATEINSERTED, PROPOSEDTIME, MINIMUM, TOPIC)"
-                        + " VALUES (" + fmtStrDB(Requestnumberquery) + "," + fmtStrDB(msgArgs[2])
-                        + "," + fmtStrDB(msgArgs[3]) + "," + Minimumparticipants
-                        +  "," + fmtStrDB(msgArgs[4]) + ")";
-
-                    queries[1] = "INSERT INTO CancelMessage(MEETINGNUMBER, WHOCANCELED)" + " VALUES (" + fmtStrDB(msgArgs[1])
-                            + "," + fmtStrDB(InetAddress.getLocalHost().getHostName()) + ")";}
-                else {
-                    queries[0] = "INSERT INTO NotScheduledMessage(REQUESTNUMBER, DATEINSERTED, PROPOSEDTIME, MINIMUM, LISTOFCONFIRMEDPARTICIPANTS, TOPIC)"
-                            + " VALUES (" + fmtStrDB(Requestnumberquery) + "," + fmtStrDB(msgArgs[2])
-                            + "," + fmtStrDB(msgArgs[3]) + "," + Minimumparticipants
-                            + "," + fmtStrDB(lOfConfPart) + "," + fmtStrDB(msgArgs[4]) + ")";
-
-                    queries[1] = "INSERT INTO CancelMessage(MEETINGNUMBER, WHOCANCELED)" + " VALUES (" + fmtStrDB(msgArgs[1])
-                            + "," + fmtStrDB(InetAddress.getLocalHost().getHostName()) + ")";
-                }
-
                 // LIST_OF_CONFIRMED_PARTICIPANTS
                 ArrayList<String> ListofConfParticipants = new ArrayList<String>(Arrays.asList(lOfConfPart));
-                NotScheduledMessage NotScheduledMsg = new NotScheduledMessage(Requestnumberquery, msgArgs[2], msgArgs[3],
-                        Integer.valueOf(Minimumparticipants), ListofConfParticipants, msgArgs[4]);
 
-                // Cancel message
+                while (res2.next()) {
+                    Requestnumberquery = res2.getString(1);
+                    Requester = res2.getString(3);
+                    Minimumparticipants = res2.getString(4);
+                }
+
+                if (option == 1) {
+                    if (lOfConfPart == "") {
+                        queries[0] = "INSERT INTO NotScheduledMessage(REQUESTNUMBER, DATEINSERTED, PROPOSEDTIME, MINIMUM, TOPIC)"
+                                + " VALUES (" + fmtStrDB(Requestnumberquery) + "," + fmtStrDB(msgArgs[2])
+                                + "," + fmtStrDB(msgArgs[3]) + "," + Minimumparticipants
+                                + "," + fmtStrDB(msgArgs[4]) + ")";
+                    } else {
+                        queries[0] = "INSERT INTO NotScheduledMessage(REQUESTNUMBER, DATEINSERTED, PROPOSEDTIME, MINIMUM, LISTOFCONFIRMEDPARTICIPANTS, TOPIC)"
+                                + " VALUES (" + fmtStrDB(Requestnumberquery) + "," + fmtStrDB(msgArgs[2])
+                                + "," + fmtStrDB(msgArgs[3]) + "," + Minimumparticipants
+                                + "," + fmtStrDB(lOfConfPart) + "," + fmtStrDB(msgArgs[4]) + ")";
+                    }
+
+                    NotScheduledMessage NotScheduledMsg = new NotScheduledMessage(Requestnumberquery, msgArgs[2], msgArgs[3],
+                            Integer.valueOf(Minimumparticipants), ListofConfParticipants, msgArgs[4]);
+
+                    // NotScheduled message
+                    String currMsg = NotScheduledMsg.printNotSchedMessage();
+
+                    // send a message to the requester
+                    sendUdpPacket(currMsg, getPortByClientName(Requester), ds,Requester);
+                }
+
+                queries[1] = "INSERT INTO CancelMessage(MEETINGNUMBER, WHOCANCELED)" + " VALUES (" + fmtStrDB(msgArgs[1])
+                        + "," + fmtStrDB(InetAddress.getLocalHost().getHostName()) + ")";
+
                 CancelMessageI CancelMsg = new CancelMessageI(msgArgs[1]);
-
-                // NotScheduled message
-                String currMsg = NotScheduledMsg.printNotSchedMessage();
 
                 // Cancel Message
                 String currMsg2 = CancelMsg.printCancelIMessage();
@@ -746,19 +845,19 @@ public class Utility {
                 sendUdpPacketToLOP(arrayoflOfConfPart, ds, currMsg2);
 
                 // send a message to the requester
-                sendUdpPacket(currMsg, getPortByClientName(Requester), ds,Requester);
+                if (option == 2)
+                    sendUdpPacket(currMsg2, getPortByClientName(Requester), ds,Requester);
             }
             Statement sts = conn.createStatement();
             for (String s : queries) {
-                sts.addBatch(s);
+                if (s != null)
+                    sts.addBatch(s);
             }
             sts.executeBatch();
 
             conn.close();
 
             // TODO - make sure the appointment booking is done accordingly
-            // TODO - make sure the room reservation is canceled
-            // participants[1] accordingly
 
         } catch (SQLException | IOException ex) {
             ex.printStackTrace();
@@ -874,13 +973,13 @@ public class Utility {
      * @param msgToSend
      * @param ds
      */
-    public static void TIMER(String msgToSend, DatagramSocket ds) {
+    public static void TIMER(String msgToSend, DatagramSocket ds, int option) {
         Thread timer = new Thread(new Runnable() {
             @Override
             public void run() {
                 try {
                     Thread.sleep(20000);
-                    followUpLogicForInviteMessage(msgToSend, ds);
+                    followUpLogicForInviteMessage(msgToSend, ds, option);
                 } catch (InterruptedException e) {
                     System.out.println(e);
                 }

@@ -27,13 +27,17 @@ public class InviteMessage {
         else {
             // use this notation on the client side
         	System.out.println(myIp);
-            this.MT_NUMBER = Utility.getClientNameFromDB(in) + "-" + Utility.messageCount(myIp, curr_mt_num);
+            this.MT_NUMBER = Utility.getClientNameFromDB(in) + "-" + Utility.messageCount(myIp, curr_mt_num, true);
         }
         this.IV_DATE = IV_DATE;
         this.IV_TIME = IV_TIME;
         setIV_DATETIME(IV_DATE, IV_TIME);
         this.IV_TOPIC = IV_TOPIC;
         this.IV_REQUESTER = IV_REQUESTER;
+    }
+
+    public static int getCURR_MT_NUM() {
+        return curr_mt_num;
     }
 
     public static int getIV_CODE() {

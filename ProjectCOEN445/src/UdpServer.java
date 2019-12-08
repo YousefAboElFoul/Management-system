@@ -106,25 +106,6 @@ public class UdpServer extends Utility {
 							System.out.println("Please Enter Your Inputs:");
 							if (inp != null) {
 								if (!inp.equals("Invalid Message")) {
-									if (inp.contains("2222") || inp.contains("6660")) {
-										String[] msgR = inp.split(" & ");
-										String msgToSend = msgR[0];
-										String[] lOP = msgR[1].replace("[", "").replace("]", "").split(",");
-
-										// send Message to list of Confirmed Participants
-										sendUdpPacketToLOP(lOP, ds, msgToSend);
-
-										if (inp.contains("2222")) {
-											TIMER(msgToSend, ds);
-										}
-									}
-									else {
-										String ipC = currMsg[1].replace("/", "").split(":")[0];
-
-										// send a message to the requester
-										sendUdpPacket(inp, getPortByIP(currMsg[1]), ds, ipC);
-									}
-
 									if (inp.equals("bye"))
 										break;
 								}
