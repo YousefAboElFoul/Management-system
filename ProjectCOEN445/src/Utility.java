@@ -553,7 +553,7 @@ public class Utility {
                     Date mtDT = new Date(date_ + " " + time_);
 
 
-                    if(person.equals(requester_) && lOfConfPart.contains(person) && (currDT.compareTo(mtDT) < 0)) {
+                    if(!person.equals(requester_) && lOfConfPart.contains(person) && (currDT.compareTo(mtDT) < 0)) {
                         //Insert into the DB whowithdrew
                         String queryW = "INSERT INTO WithdrawMessage(MEETINGNUMBER, WHOWITHDRAWED)"
                                 + " VALUES (?, ?)";
@@ -655,7 +655,7 @@ public class Utility {
                     time_ = timeFormat.format(res.getTime(2));
                     requester_ = res.getString(3);
 
-                    if(person.equals(requester_)) {
+                    if(!person.equals(requester_)) {
                         queries[0] = "INSERT INTO ParticipantsConfirmed (MEETINGNUMBER, WHO)"
                                 + " VALUES (" + fmtStrDB(currMT) + "," + fmtStrDB(person) + ")";
 
