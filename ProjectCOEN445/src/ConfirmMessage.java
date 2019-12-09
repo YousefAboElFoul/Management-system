@@ -30,7 +30,7 @@ public class ConfirmMessage {
     }
 
     public String printConfMessage() {
-        String output = "{" + this.getCF_CODE() + " | " + this.getMT_NUMBER() + " | " + this.getROOM_NUMBER() + "}";
+        String output = "{" + getCF_CODE() + " | " + this.getMT_NUMBER() + " | " + this.getROOM_NUMBER() + "}";
         return output;
     }
 

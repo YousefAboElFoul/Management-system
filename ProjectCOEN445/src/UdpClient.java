@@ -6,7 +6,9 @@ import java.util.Scanner;
 
 public class UdpClient extends Utility {
 
-    public static void main(String args[]) throws Exception {
+    private static DatagramSocket ds;
+
+    public static void main(String[] args) throws Exception {
         // Configuration
         System.out.println("Starting UDP CLIENT");
 
@@ -14,12 +16,13 @@ public class UdpClient extends Utility {
         Scanner myObj = new Scanner(System.in);
 
         System.out.println("Please enter the port on which the server is listening:");
-        String Port = myObj.nextLine();
+        String sPort = myObj.nextLine();
 
         System.out.println("Please enter the IP address of the server:");
         String ipS = myObj.nextLine();
 
-        DatagramSocket ds = new DatagramSocket();
+        ds = new DatagramSocket();
+
         String myIp = InetAddress.getLocalHost().getHostAddress();
 
 
@@ -33,30 +36,32 @@ public class UdpClient extends Utility {
                 while (true) {
                     // Sending Configuration
                     String inp = null;
-                    byte buf[] = null;
+                    byte[] buf = null;
 
                     // Initialize communication with the Server
                     try {
-                        sendHiMessageToTheServer(ds ,ipS, Port);
+                        sendHiMessageToTheServer(ds ,ipS, sPort);
                     } catch (IOException e) {
                         e.printStackTrace();
                     }
 
                     Scanner sc = new Scanner(System.in);
+                    System.out.println(" ");
                     System.out.println("Please Input your inputs");
 
                     try {
                         // convert the String input into the byte array
-                        inp = Utility.getUserInput(sc.nextLine(), myIp);
+                        inp = getUserInput(sc.nextLine(), myIp);
 
                         // send the user's input
                         while (!inp.equals("Invalid Message")) {
 
                             // send a message to the server
-                            sendUdpPacket(inp, Integer.parseInt(Port), ds, ipS);
+                            sendUdpPacket(inp, Integer.parseInt(sPort), ds, ipS);
 
+                            System.out.println(" ");
                             System.out.println("Please Input your inputs");
-                            inp = Utility.getUserInput(sc.nextLine(), myIp); // convert the String input into the byte array.
+                            inp = getUserInput(sc.nextLine(), myIp);
 
                             // break the loop if user enters "bye"
                             if (inp.equals("bye"))
@@ -83,17 +88,20 @@ public class UdpClient extends Utility {
                 while (true) {
 
                     // Receiving Configuration
-                    byte bu_rec[] = new byte[1024];
+                    byte[] bu_rec = new byte[1024];
                     DatagramPacket DpReceive = null;
 
                     try {
-                        System.out.println("See Input");
                         // received from the sever
                         DpReceive = new DatagramPacket(bu_rec, 1024);
                         ds.receive(DpReceive);
                         if (DpReceive != null) {
                             String strR = new String(DpReceive.getData(), 0, DpReceive.getLength());
-                            System.out.println("Server:-" + strR);
+                            String ot = "Server:-" + strR;
+                            System.out.println(ot);
+
+                            if (ot.contains("2222"))
+                                processingClient(ot, Integer.parseInt(sPort), ipS, InetAddress.getLocalHost().getHostName());
                         }
 
                         Thread.sleep(1000);
@@ -109,8 +117,6 @@ public class UdpClient extends Utility {
         receivingTC.start();
         sendingTC.join();
         receivingTC.join();
-
-//        ds.close();
     }
 
     /**
@@ -125,5 +131,12 @@ public class UdpClient extends Utility {
         sendUdpPacket(hiMessage, Integer.parseInt(port), ds, ipS);
     }
 
+    /**
+     * gets the datagram socket of the client
+     * @return
+     */
+    public static DatagramSocket getSocket() {
+        return ds;
+    }
 }
 

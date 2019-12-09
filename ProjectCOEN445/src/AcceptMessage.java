@@ -20,7 +20,7 @@ public class AcceptMessage {
     }
 
     public String printAMessage() {
-        String output = "{" + this.getAC_CODE() + " | " + this.getMT_NUMBER() + "}";
+        String output = "{" + getAC_CODE() + " | " + this.getMT_NUMBER() + "}";
         return output;
     }
 

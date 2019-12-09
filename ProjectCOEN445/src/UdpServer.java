@@ -9,7 +9,7 @@ public class UdpServer extends Utility {
 
 	private static DatagramSocket ds;
 
-	public static void main(String[] args) throws IOException, SQLException, Exception {
+	public static void main(String[] args) throws Exception {
 
 		// establish connection with database
 		establishDBConnection();
@@ -37,10 +37,9 @@ public class UdpServer extends Utility {
 		Thread receivingTS = new Thread(new Runnable() {
 			@Override
 			public void run() {
-
 				while (true) {
 					// Receiving Configuration
-					byte bu_rec[] = new byte[1024];
+					byte[] bu_rec = new byte[1024];
 					DatagramPacket DpReceive = null;
 
 					try {
@@ -103,7 +102,7 @@ public class UdpServer extends Utility {
 							// remove the current message from the queue after being processed
 							pendingMessagesToBeTreated.remove(currObj);
 
-							System.out.println("Please Enter Your Inputs:");
+							System.out.println(" ");
 							if (inp != null) {
 								if (!inp.equals("Invalid Message")) {
 									if (inp.equals("bye"))
@@ -124,11 +123,71 @@ public class UdpServer extends Utility {
 			}
 		});
 
+		/**
+		 * Input Thread
+		 */
+		Thread inputTS = new Thread(new Runnable() {
+			@Override
+			public void run() {
+				while (true) {
+
+					// Sending Configuration
+					String input = null;
+
+					Scanner sc = new Scanner(System.in);
+					System.out.println("Please Input your inputs");
+
+					try {
+						String inp = sc.nextLine();
+						boolean good = false;
+						while (!good) {
+							while (!inp.contains(String.valueOf(Message.ROOM_CHANGE_CODE))) {
+								inp = sc.nextLine();
+								System.out.println("\nInvalid input message\n\n");
+							}
+
+							input = getUserInput(inp, null);
+							if (!input.equals("Invalid Message"))
+								good = true;
+							else {
+								System.out.println("\nRoom number does not exist\n\n");
+								System.out.println("Please Input your inputs");
+								inp = sc.nextLine();
+							}
+						}
+
+						System.out.println("\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-");
+						// For debugging purposes
+						input = input.replace("{","");
+						System.out.println(parsingMessage(input, null).toString());
+						System.out.println(input);
+						// Storing in the pending queue
+						pendingMessagesToBeTreated.add(input + "#" + " ");
+
+						System.out.println("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-");
+
+						// break the loop if user enters "bye"
+						if (inp.equals("bye"))
+							break;
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+
+					try {
+						Thread.sleep(3000);
+					} catch (InterruptedException e) {
+						System.out.println(e + "Interrupted");
+					}
+				}
+			}
+		});
+
 		receivingTS.start();
 		sendingTS.start();
+		inputTS.start();
 		receivingTS.join();
 		sendingTS.join();
-		// TODO to close the connection
+		inputTS.join();
 	}
 
 	/**
@@ -143,7 +202,7 @@ public class UdpServer extends Utility {
 
 		System.out.println(parts[2]);
 
-		String IPAddress = parts[1].split(":")[0];
+		String IPAddress = parts[3];
 		String ListeningPort = parts[1].split(":")[1];
 		String Hostname = parts[2].split("is ")[1];
 
@@ -157,6 +216,7 @@ public class UdpServer extends Utility {
 		executedDB(query);
 	}
 
+	/** gets the datagram socket of the server **/
 	public static DatagramSocket getSocket(){
 		return ds;
 	}

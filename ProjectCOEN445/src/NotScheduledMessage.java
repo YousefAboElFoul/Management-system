@@ -83,7 +83,7 @@ public class NotScheduledMessage {
     }
 
     public String printNotSchedMessage() {
-        String output = "{" + this.getNSD_CODE() + " | " + this.getRQ_NUMBER() + " | " + this.getNSD_DATE() + " | " + this.getNSD_TIME() + " | " + this.getMIN_NUMBER_OF_PARTICIPANTS() + " | " + this.getLIST_OF_CONFIRMED_PARTICIPANTS() + " | " + this.getNSD_TOPIC() + "}";
+        String output = "{" + getNSD_CODE() + " | " + this.getRQ_NUMBER() + " | " + this.getNSD_DATE() + " | " + this.getNSD_TIME() + " | " + this.getMIN_NUMBER_OF_PARTICIPANTS() + " | " + this.getLIST_OF_CONFIRMED_PARTICIPANTS() + " | " + this.getNSD_TOPIC() + "}";
         return output;
     }
 

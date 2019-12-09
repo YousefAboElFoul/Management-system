@@ -32,7 +32,7 @@ Input format for "CLIENT" sending messages
         6661 YvannMBPro2.local-2
 
 - FOR WITHDRAWII MESSAGE (withdraw2_code mt#)
-        7771 /127.0.0.1-1
+        7771 YvannMBPro2.local-2
 
 - FOR ADD MESSAGE (add_code mt#)
         8880 /127.0.0.1-1
@@ -40,7 +40,8 @@ Input format for "CLIENT" sending messages
 
 Input format for "SERVER" sending messages
 ***********************************
-- FOR RESPONSE MESSAGE (resp_code rq#)
+- FOR ROOMCHANGE MESSAGE (mt# new_room)
+        9999 YvannMBPro2.local-2 EV02.301
 
 - FOR INVITE MESSAGE (inv_code date time topic requester)
         2222 03/25/2019 15:30 welcome /127.0.0.1

@@ -93,7 +93,7 @@ public class InviteMessage {
     }
 
     public String printInvMessage() {
-        String output = "{" + this.getIV_CODE() + " | " + this.getMT_NUMBER() + " | " + this.getIV_DATE() + " | " + this.getIV_TIME() + " | " + this.getIV_TOPIC() + " | " + this.getIV_REQUESTER() + "}";
+        String output = "{" + getIV_CODE() + " | " + this.getMT_NUMBER() + " | " + this.getIV_DATE() + " | " + this.getIV_TIME() + " | " + this.getIV_TOPIC() + " | " + this.getIV_REQUESTER() + "}";
         return output;
     }
 

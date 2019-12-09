@@ -100,7 +100,7 @@ public class RequestMessage {
     }
 
     public String printReqMessage() {
-        String output = "{" + this.getRQ_CODE() + " | " + this.getRQ_NUMBER() + " | " + this.getRQ_DATE() + " | " + this.getRQ_TIME() + " | " + this.getMIN_NUMBER_OF_PARTICIPANTS() + " | " + this.getLIST_OF_PARTICIPANTS() + " | " + this.getRQ_TOPIC() + "}";
+        String output = "{" + getRQ_CODE() + " | " + this.getRQ_NUMBER() + " | " + this.getRQ_DATE() + " | " + this.getRQ_TIME() + " | " + this.getMIN_NUMBER_OF_PARTICIPANTS() + " | " + this.getLIST_OF_PARTICIPANTS() + " | " + this.getRQ_TOPIC() + "}";
         return output;
     }
 }

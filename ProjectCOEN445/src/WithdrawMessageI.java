@@ -30,7 +30,7 @@ public class WithdrawMessageI {
     }
 
     public String printWithdrawIMessage() {
-        String output = "{" + this.getWDI_CODE() + " | " + this.getMT_NUMBER() + " | " + this.getIP_ADDRESS() + "}";
+        String output = "{" + getWDI_CODE() + " | " + this.getMT_NUMBER() + " | " + this.getIP_ADDRESS() + "}";
         return output;
     }
 }

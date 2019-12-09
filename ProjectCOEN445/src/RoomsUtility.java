@@ -3,32 +3,35 @@ import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.time.LocalTime;
 
-public class RoomsUtility {
+public class RoomsUtility extends Utility{
     final static public String ROOM_TWO = "EV02.301";
     final static public String ROOM_ONE = "EV05.251";
 
 
-    public static boolean reserveRoom(String date, String hr, String meeting_num) throws ParseException {
+    public static String[] reserveRoom(String date, String hr, String meeting_num) throws ParseException {
         SimpleDateFormat format = new SimpleDateFormat("MM/dd/yyyy");
 
         //Parameter definition
         Date req_date = new java.sql.Date(format.parse(date).getTime());
         Time req_time = Time.valueOf(LocalTime.parse(String.valueOf(hr)));
+        String choosenRoom = null;
 
-        String q1 = "SELECT ROOMNUMBER"
+        String q1 = "SELECT DISTINCT ROOMNUMBER"
                 + " FROM RoomReservation"
-                + " WHERE DATEINSERTED = " + Utility.fmtStrDB(req_date.toString())
-                + " AND START_TIME = " + Utility.fmtStrDB(req_time.toString());
+                + " WHERE DATEINSERTED = " + fmtStrDB(req_date.toString())
+                + " AND START_TIME = " + fmtStrDB(req_time.toString());
 
-        try (Connection conn = Utility.connect();
+        try (Connection conn = connect();
              PreparedStatement pstmt = conn.prepareStatement(q1);
              ResultSet res = pstmt.executeQuery()) {
             String q2 = null;
 
             if (!res.next()) {
                 q2 = "INSERT INTO RoomReservation (ROOMNUMBER, dateinserted, start_time, meetingnumber)"
-                        + " VALUES (" + Utility.fmtStrDB(ROOM_ONE) + ", " + Utility.fmtStrDB(req_date.toString())
-                        + ", " + Utility.fmtStrDB(req_time.toString()) + ", " + Utility.fmtStrDB(meeting_num) + ")";
+                        + " VALUES (" + fmtStrDB(ROOM_ONE) + ", " + fmtStrDB(req_date.toString())
+                        + ", " + fmtStrDB(req_time.toString()) + ", " + fmtStrDB(meeting_num) + ")";
+
+                choosenRoom = ROOM_ONE;
             } else {
                 String result = "";
                 result += res.getString(1) + ",";
@@ -39,27 +42,29 @@ public class RoomsUtility {
 
                 if (!result.contains(ROOM_ONE)) {
                     q2 = "INSERT INTO RoomReservation (ROOMNUMBER, dateinserted, start_time, meetingnumber)"
-                            + " VALUES (" + Utility.fmtStrDB(ROOM_ONE) + ", " + Utility.fmtStrDB(req_date.toString())
-                            + ", " + Utility.fmtStrDB(req_time.toString()) + ", " + Utility.fmtStrDB(meeting_num) + ")";
+                            + " VALUES (" + fmtStrDB(ROOM_ONE) + ", " + fmtStrDB(req_date.toString())
+                            + ", " + fmtStrDB(req_time.toString()) + ", " + fmtStrDB(meeting_num) + ")";
+
+                    choosenRoom = ROOM_ONE;
                 } else if (!result.contains(ROOM_TWO)) {
                     q2 = "INSERT INTO RoomReservation (ROOMNUMBER, dateinserted, start_time, meetingnumber)"
-                            + " VALUES (" + Utility.fmtStrDB(ROOM_TWO) + ", " + Utility.fmtStrDB(req_date.toString())
-                            + ", " + Utility.fmtStrDB(req_time.toString()) + ", " + Utility.fmtStrDB(meeting_num) + ")";
+                            + " VALUES (" + fmtStrDB(ROOM_TWO) + ", " + fmtStrDB(req_date.toString())
+                            + ", " + fmtStrDB(req_time.toString()) + ", " + fmtStrDB(meeting_num) + ")";
+
+                    choosenRoom = ROOM_TWO;
                 } else {
-                    return false;
+                    return new String[] {"false", choosenRoom};
                 }
             }
 
-            conn.prepareStatement(q2).execute();
+            executedDB(q2);
 
-//            PreparedStatement pstmt2 = conn.prepareStatement(q2);
-//            pstmt2.execute();
-            return true;
+            return new String[] {"true", choosenRoom};
 
         } catch (SQLException ex) {
             ex.printStackTrace();
         }
-        // if reserving was unsuccessful
-        return false;
+        // if reservation was unsuccessful
+        return new String[] {"false", choosenRoom};
     }
 }

@@ -20,7 +20,7 @@ public class RejectMessage {
     }
 
     public String printRMessage() {
-        String output = "{" + this.getRJ_CODE() + " | " + this.getMT_NUMBER() + "}";
+        String output = "{" + getRJ_CODE() + " | " + this.getMT_NUMBER() + "}";
         return output;
     }
 }

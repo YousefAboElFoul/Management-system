@@ -20,7 +20,7 @@ public class AddMessage {
     }
 
     public String printAddMessage() {
-        String output = "{" + this.getA_CODE() + " | " + this.getMT_NUMBER() + "}";
+        String output = "{" + getA_CODE() + " | " + this.getMT_NUMBER() + "}";
         return output;
     }
 }

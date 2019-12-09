@@ -30,7 +30,7 @@ public class RoomChangeMessage {
     }
 
     public String printRoomChangeMessage() {
-        String output = "{" + this.getRC_CODE() + " | " + this.getMT_NUMBER() + " | " + this.getNEW_ROOM_NUMBER() + "}";
+        String output = "{" + getRC_CODE() + " | " + this.getMT_NUMBER() + " | " + this.getNEW_ROOM_NUMBER() + "}";
         return output;
     }
 }
