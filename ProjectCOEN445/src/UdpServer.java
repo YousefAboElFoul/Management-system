@@ -2,8 +2,10 @@ import java.io.IOException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
-import java.sql.*;
-import java.util.*;
+import java.sql.SQLException;
+import java.util.Iterator;
+import java.util.Scanner;
+import java.util.concurrent.PriorityBlockingQueue;
 
 public class UdpServer extends Utility {
 
@@ -26,10 +28,10 @@ public class UdpServer extends Utility {
 		ds = new DatagramSocket(Integer.parseInt(Port));
 
 		// IP Address of the server
-		InetAddress ipS = InetAddress.getByName(InetAddress.getLocalHost().getHostAddress());
+		String ipS = InetAddress.getLocalHost().getHostName();
 
 		// Queue that holds all the pending messages
-		PriorityQueue<String> pendingMessagesToBeTreated = new PriorityQueue<>();
+		PriorityBlockingQueue<String> pendingMessagesToBeTreated = new PriorityBlockingQueue<>();
 
 		/**
 		 *  Receiving Thread
@@ -60,8 +62,10 @@ public class UdpServer extends Utility {
 								insertClientIntoDB(ot);
 							} else {
 								// For debugging purposes
-								System.out.println(parsingMessage(ot, from).toString());
 								System.out.println(ot);
+								logMessages(ot);
+
+								System.out.println(parsingMessage(ot, from, 1).toString());
 								// Storing in the pending queue
 								pendingMessagesToBeTreated.add(ot + "#" + from2);
 							}
@@ -84,12 +88,12 @@ public class UdpServer extends Utility {
 			@Override
 			public void run() {
 				while (true) {
-					Iterator itr = pendingMessagesToBeTreated.iterator();
 
 					// Sending Configuration
 					String inp = null;
 
-					while (itr.hasNext()) {
+					for (Iterator itr = pendingMessagesToBeTreated.iterator(); itr.hasNext();) {
+
 						try {
 							Object currObj = itr.next();
 
@@ -97,7 +101,7 @@ public class UdpServer extends Utility {
 							String[] currMsg = currObj.toString().split("#");
 
 							// process the message
-							inp = processingServer(currMsg[0], ipS.toString(), getClientNameFromDB(currMsg[1])); // convert the
+							inp = processingServer(currMsg[0], ipS, getClientNameFromDB(currMsg[1])); // convert the
 
 							// remove the current message from the queue after being processed
 							pendingMessagesToBeTreated.remove(currObj);
@@ -158,9 +162,9 @@ public class UdpServer extends Utility {
 
 						System.out.println("\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-");
 						// For debugging purposes
-						input = input.replace("{","");
-						System.out.println(parsingMessage(input, null).toString());
 						System.out.println(input);
+						input = input.replace("{","");
+						System.out.println(parsingMessage(input, null, 1).toString());
 						// Storing in the pending queue
 						pendingMessagesToBeTreated.add(input + "#" + " ");
 
@@ -195,12 +199,13 @@ public class UdpServer extends Utility {
 	 *
 	 * @param ot
 	 */
-	private static void insertClientIntoDB(String ot) throws SQLException {
+	private static void insertClientIntoDB(String ot) throws SQLException, IOException {
 		System.out.println("Client joining...");
 
 		String[] parts = ot.split("/");
 
 		System.out.println(parts[2]);
+		logMessages(parts[2]);
 
 		String IPAddress = parts[3];
 		String ListeningPort = parts[1].split(":")[1];

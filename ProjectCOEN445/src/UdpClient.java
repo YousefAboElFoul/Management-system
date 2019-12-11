@@ -33,17 +33,16 @@ public class UdpClient extends Utility {
             @Override
             public void run() {
 
+                // Initialize communication with the Server
+                try {
+                    sendHiMessageToTheServer(ds ,ipS, sPort);
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+
                 while (true) {
                     // Sending Configuration
                     String inp = null;
-                    byte[] buf = null;
-
-                    // Initialize communication with the Server
-                    try {
-                        sendHiMessageToTheServer(ds ,ipS, sPort);
-                    } catch (IOException e) {
-                        e.printStackTrace();
-                    }
 
                     Scanner sc = new Scanner(System.in);
                     System.out.println(" ");
@@ -66,6 +65,10 @@ public class UdpClient extends Utility {
                             // break the loop if user enters "bye"
                             if (inp.equals("bye"))
                                 break;
+                        }
+
+                        if(inp.equals("Invalid Message")) {
+                            System.out.println(inp);
                         }
 
                         Thread.sleep(1000);
@@ -99,6 +102,7 @@ public class UdpClient extends Utility {
                             String strR = new String(DpReceive.getData(), 0, DpReceive.getLength());
                             String ot = "Server:-" + strR;
                             System.out.println(ot);
+                            logMessages(ot);
 
                             if (ot.contains("2222"))
                                 processingClient(ot, Integer.parseInt(sPort), ipS, InetAddress.getLocalHost().getHostName());

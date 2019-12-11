@@ -26,8 +26,7 @@ public class InviteMessage {
         }
         else {
             // use this notation on the client side
-        	System.out.println(myIp);
-            this.MT_NUMBER = Utility.getClientNameFromDB(in) + "-" + Utility.messageCount(myIp, curr_mt_num, true);
+            this.MT_NUMBER = in + "-" + Utility.messageCount(myIp, curr_mt_num, true);
         }
         this.IV_DATE = IV_DATE;
         this.IV_TIME = IV_TIME;

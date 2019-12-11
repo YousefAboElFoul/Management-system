@@ -1,6 +1,6 @@
 DROP TABLE IF EXISTS acceptmessage,addmessage,cancelmessage,confirmmessage,invitemessage,notscheduledmessage,
     participantsconfirmed,rejectmessage,requestmessage,responsemessage,roomchangemessage,
-    roomreservation,scheduledmessage,withdrawmessage, messagecount, Registration, Bookings;
+    roomreservation,scheduledmessage,withdrawmessage,messagecount,registration,bookings;
 
 
 CREATE TABLE RequestMessage(
@@ -29,7 +29,8 @@ CREATE TABLE RoomReservation(
                                 DATEINSERTED date NOT NULL,
                                 START_TIME time NOT NULL,
                                 MEETINGNUMBER VARCHAR(255) NOT NULL,
-                                CONSTRAINT Room_uk UNIQUE (MEETINGNUMBER, ROOMNUMBER)
+                                CONSTRAINT Room_uk UNIQUE (MEETINGNUMBER, ROOMNUMBER),
+                                CONSTRAINT RoomU_uk UNIQUE (ROOMNUMBER, DATEINSERTED, START_TIME)
 );
 
 
@@ -53,7 +54,7 @@ CREATE TABLE InviteMessage(
                               REQUESTNUMBER VARCHAR(255) NOT NULL,
                               CONSTRAINT Invite_uq UNIQUE (MEETINGNUMBER),
                               CONSTRAINT Invite_Reg_fk
-                                  FOREIGN KEY (REQUESTER) REFERENCES Registration (CLIENTNAME)
+                                  FOREIGN KEY (REQUESTER) REFERENCES Registration (CLIENTNAME) ON UPDATE CASCADE
 );
 
 CREATE TABLE AcceptMessage(
@@ -64,7 +65,7 @@ CREATE TABLE AcceptMessage(
                               CONSTRAINT Accept_fk
                                   FOREIGN KEY (MEETINGNUMBER) REFERENCES InviteMessage (MEETINGNUMBER),
                               CONSTRAINT Accept_Reg_fk
-                                  FOREIGN KEY (WHOACCEPTED) REFERENCES Registration (CLIENTNAME)
+                                  FOREIGN KEY (WHOACCEPTED) REFERENCES Registration (CLIENTNAME) ON UPDATE CASCADE
 );
 
 CREATE TABLE RejectMessage(
@@ -75,7 +76,7 @@ CREATE TABLE RejectMessage(
                               CONSTRAINT Reject_Inv_fk
                                   FOREIGN KEY (MEETINGNUMBER) REFERENCES InviteMessage (MEETINGNUMBER),
                               CONSTRAINT Reject_Reg_fk
-                                  FOREIGN KEY (WHOREJECTED) REFERENCES Registration (CLIENTNAME)
+                                  FOREIGN KEY (WHOREJECTED) REFERENCES Registration (CLIENTNAME) ON UPDATE CASCADE
 );
 
 CREATE TABLE ConfirmMessage(
@@ -84,7 +85,9 @@ CREATE TABLE ConfirmMessage(
                                ROOMNUMBER VARCHAR(255) NOT NULL,
                                CONSTRAINT Confirm_uq UNIQUE (MEETINGNUMBER),
                                CONSTRAINT Confirm_Room_fk
-                                   FOREIGN KEY (MEETINGNUMBER, ROOMNUMBER) REFERENCES RoomReservation (MEETINGNUMBER, ROOMNUMBER) ON DELETE CASCADE
+                                   FOREIGN KEY (MEETINGNUMBER, ROOMNUMBER) REFERENCES RoomReservation (MEETINGNUMBER, ROOMNUMBER)
+                                       ON DELETE CASCADE ON UPDATE CASCADE
+
 );
 
 -- Could update list confirmed participants
@@ -98,7 +101,8 @@ CREATE TABLE ScheduledMessage(
                                  CONSTRAINT Scheduled_Req_fk
                                      FOREIGN KEY (REQUESTNUMBER) REFERENCES RequestMessage (REQUESTNUMBER),
                                  CONSTRAINT Scheduled_Room_fk
-                                     FOREIGN KEY (MEETINGNUMBER, ROOMNUMBER) REFERENCES RoomReservation (MEETINGNUMBER ,ROOMNUMBER) ON DELETE CASCADE
+                                     FOREIGN KEY (MEETINGNUMBER, ROOMNUMBER) REFERENCES RoomReservation (MEETINGNUMBER ,ROOMNUMBER)
+                                         ON DELETE CASCADE ON UPDATE CASCADE
 );
 
 CREATE TABLE CancelMessage(
@@ -128,9 +132,9 @@ CREATE TABLE WithdrawMessage(
                                 WHOWITHDRAWED VARCHAR(255) NOT NULL,
                                 CONSTRAINT Withdraw_uq UNIQUE (MEETINGNUMBER, WHOWITHDRAWED),
                                 CONSTRAINT Withdraw_Inv_fk
-                                    FOREIGN KEY (MEETINGNUMBER) REFERENCES ScheduledMessage (MEETINGNUMBER),
+                                    FOREIGN KEY (MEETINGNUMBER) REFERENCES ScheduledMessage (MEETINGNUMBER) ON DELETE CASCADE,
                                 CONSTRAINT Withdraw_Reg_fk
-                                    FOREIGN KEY (WHOWITHDRAWED) REFERENCES Registration (CLIENTNAME)
+                                    FOREIGN KEY (WHOWITHDRAWED) REFERENCES Registration (CLIENTNAME) ON UPDATE CASCADE
 );
 
 -- Could update wasadded
@@ -149,8 +153,8 @@ CREATE TABLE RoomChangeMessage(
                                   MEETINGNUMBER VARCHAR(255) NOT NULL,
                                   NEWROOM  VARCHAR(255) NOT NULL,
                                   CONSTRAINT RoomChange_uq UNIQUE (MEETINGNUMBER, NEWROOM),
-                                  CONSTRAINT RoomChange_Room_fk
-                                      FOREIGN KEY (MEETINGNUMBER, NEWROOM) REFERENCES RoomReservation (MEETINGNUMBER, ROOMNUMBER) ON DELETE CASCADE
+                                  CONSTRAINT RoomChange_Inv_fk
+                                      FOREIGN KEY (MEETINGNUMBER) REFERENCES InviteMessage (MEETINGNUMBER)
 );
 
 -- Could update confirmed
@@ -159,11 +163,11 @@ CREATE TABLE ParticipantsConfirmed(
                                       MEETINGNUMBER VARCHAR(255) NOT NULL,
                                       WHO VARCHAR(255) NOT NULL,
                                       CONFIRMED BOOLEAN DEFAULT TRUE,
-                                      CONSTRAINT PartConf_uq UNIQUE (MEETINGNUMBER),
+                                      CONSTRAINT PartConf_uq UNIQUE (MEETINGNUMBER, WHO),
                                       CONSTRAINT PartConf_Inv_fk
                                           FOREIGN KEY (MEETINGNUMBER) REFERENCES InviteMessage (MEETINGNUMBER),
                                       CONSTRAINT PartConf_Reg_fk
-                                          FOREIGN KEY (WHO) REFERENCES Registration (CLIENTNAME)
+                                          FOREIGN KEY (WHO) REFERENCES Registration (CLIENTNAME) ON UPDATE CASCADE
 );
 
 CREATE TABLE MessageCount(
@@ -180,7 +184,8 @@ CREATE TABLE Bookings(
                          ROOMNUMBER VARCHAR(255) NOT NULL,
                          CONSTRAINT Bookings_uk UNIQUE (CLIENTNAME, MEETINGNUMBER),
                          CONSTRAINT Bookings_Reg_fk
-                             FOREIGN KEY (CLIENTNAME) REFERENCES Registration (CLIENTNAME),
+                             FOREIGN KEY (CLIENTNAME) REFERENCES Registration (CLIENTNAME) ON UPDATE CASCADE,
                          CONSTRAINT Bookings_Room_fk
-                             FOREIGN KEY (MEETINGNUMBER, ROOMNUMBER) REFERENCES RoomReservation (MEETINGNUMBER, ROOMNUMBER) ON DELETE CASCADE
+                             FOREIGN KEY (MEETINGNUMBER, ROOMNUMBER) REFERENCES RoomReservation (MEETINGNUMBER, ROOMNUMBER)
+                                 ON DELETE CASCADE ON UPDATE CASCADE
 );

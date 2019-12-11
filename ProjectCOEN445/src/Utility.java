@@ -1,4 +1,6 @@
+import java.io.FileWriter;
 import java.io.IOException;
+import java.io.PrintWriter;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
@@ -18,12 +20,12 @@ public class Utility {
     public static final String url = "jdbc:postgresql://ec2-54-235-92-244.compute-1.amazonaws.com:5432/d70m64dg1qc8fu?sslmode=require";
     public static final String user = "gkcmczoxettaer";
     public static final String password = "8d4b50fd5a522fd0256536f4f6993a61fad200dde8d58372c1200b5e63cfe694";
-
+    public static final String[] Codes = {"1110","1111","2222","3330","3331","4444","5550","5551","6660","6661","7770","7771","8880","8881","9999","0000"};
     private final static Logger LOGGER = Logger.getLogger(Utility.class.getName());
 
     /* This for parsing messages through udp */
     @SuppressWarnings("uncheked")
-    public static <T> T parsingMessage(String in, String from) throws IOException, SQLException {
+    public static <T> T parsingMessage(String in, String from, int option) throws IOException, SQLException {
         // parsing
         String[] txt = in.replaceAll(" ","").replaceAll(".+\\{","").split("\\||\\}");
 
@@ -104,7 +106,7 @@ public class Utility {
         }
 
         // For db-insertion
-        if (query != null) {
+        if (query != null && option == 2) {
             if (mCode == Message.REQUEST_CODE || mCode == Message.ADD_CODE || mCode == Message.ROOM_CHANGE_CODE)
                 insertMessage(query, mCode, messageReceived, from);
         }
@@ -225,7 +227,7 @@ public class Utility {
         } catch (NumberFormatException e) {
             e.getMessage();
         }
-        if (arg_1 != 0) {
+        if (Arrays.asList(Codes).contains(ui[0])) {
             return switchMessages(ip, ui, arg_1);
         } else
             return "Invalid Message";
@@ -282,7 +284,7 @@ public class Utility {
         Object obj = null;
 
         try {
-            obj = parsingMessage(o, person);
+            obj = parsingMessage(o, person, 2);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -436,9 +438,10 @@ public class Utility {
 
             String currMT = currCancel.getMT_NUMBER();
 
-            String q1 = "SELECT whoaccepted"
-                    + " FROM AcceptMessage"
-                    + " WHERE MEETINGNUMBER = " + fmtStrDB(currMT);
+            String q1 = "SELECT WHO"
+                    + " FROM ParticipantsConfirmed"
+                    + " WHERE MEETINGNUMBER = " + fmtStrDB(currMT)
+                    + " AND CONFIRMED = TRUE";
             String q2 = "SELECT COUNT(DISTINCT MEETINGNUMBER)"
                     + " FROM ConfirmMessage"
                     + " WHERE MEETINGNUMBER = " + fmtStrDB(currMT);
@@ -462,7 +465,7 @@ public class Utility {
 
                         sendUdpPacketToLOP(result, UdpServer.getSocket(), currCancel.printCancelIIMessage());
 
-                        //Insert into the DB who caneled
+                        //Insert into the DB who canceled
                         String queryA = "INSERT INTO CancelMessage(MEETINGNUMBER, WHOCANCELED)"
                                 + " VALUES (?, ?)";
                         insertMessage(queryA, Message.CANCEL_2_CODE, currCancel, person);
@@ -656,11 +659,14 @@ public class Utility {
                     requester_ = res.getString(3);
 
                     if(!person.equals(requester_)) {
-                        queries[0] = "INSERT INTO ParticipantsConfirmed (MEETINGNUMBER, WHO)"
-                                + " VALUES (" + fmtStrDB(currMT) + "," + fmtStrDB(person) + ")";
 
                         if (res3.next()) {
                             roomnum_ = res3.getString(2);
+
+                            queries[0] = "INSERT INTO ParticipantsConfirmed (MEETINGNUMBER, WHO)"
+                                    + " VALUES (" + fmtStrDB(currMT) + "," + fmtStrDB(person) + ")"
+                                    + " ON CONFLICT(MEETINGNUMBER, WHO) DO UPDATE SET "
+                                    + " CONFIRMED = TRUE";
 
                             queries[1] = "UPDATE AddMessage SET WASADDED = TRUE"
                                     + " WHERE MEETINGNUMBER = " + fmtStrDB(currMT) + " AND WHO = " + fmtStrDB(person);
@@ -802,7 +808,7 @@ public class Utility {
     public static String processingClient (String o, Integer serverPort, String server, String me) throws IOException, ParseException {
         Object obj = null;
         try {
-            obj = parsingMessage(o,null);
+            obj = parsingMessage(o, null, 1);
         } catch (SQLException e) {
             e.printStackTrace();
         }
@@ -814,7 +820,7 @@ public class Utility {
                     + " FROM Bookings B"
                     + " INNER JOIN InviteMessage I"
                     + " ON B.DATEINSERTED = I.DATEINSERTED AND B.START_TIME = I.MEETINGTIME"
-                    + " WHERE CLIENTNAME = " + fmtStrDB(me);
+                    + " WHERE CLIENTNAME = " + fmtStrDB(me) + " AND I.MEETINGNUMBER = " + fmtStrDB(currInv.getMT_NUMBER());
 
             try (Connection conn = connect();
                  PreparedStatement pstmt = conn.prepareStatement(q1);
@@ -968,7 +974,7 @@ public class Utility {
             String Requester = null;
             String Roomnumber = null;
 
-            if (res.next() && option == 1) {
+            if (res.next()) {
                 int numOfConfPart = 0;
 
                 lOfConfPart += res.getString(1);
@@ -1018,62 +1024,62 @@ public class Utility {
                         // send a message to the requester
                         sendUdpPacket(currMsg, getPortByClientName(Requester), ds, Requester);
                     }
-                }
-            } else {
-                // LIST_OF_CONFIRMED_PARTICIPANTS
-                ArrayList<String> ListofConfParticipants = new ArrayList<String>(Arrays.asList(lOfConfPart));
+                    else {
+                        // LIST_OF_CONFIRMED_PARTICIPANTS
+                        ArrayList<String> ListofConfParticipants = new ArrayList<String>(Arrays.asList(lOfConfPart));
 
-                while (res2.next()) {
-                    Requestnumberquery = res2.getString(1);
-                    Requester = res2.getString(3);
-                    Minimumparticipants = res2.getString(4);
-                }
+                        while (res2.next()) {
+                            Requestnumberquery = res2.getString(1);
+                            Requester = res2.getString(3);
+                            Minimumparticipants = res2.getString(4);
+                        }
 
-                if (option == 1) {
-                    if (lOfConfPart == "") {
-                        queries[0] = "INSERT INTO NotScheduledMessage(REQUESTNUMBER, DATEINSERTED, PROPOSEDTIME, MINIMUM, TOPIC)"
-                                + " VALUES (" + fmtStrDB(Requestnumberquery) + "," + fmtStrDB(msgArgs[2])
-                                + "," + fmtStrDB(msgArgs[3]) + "," + Minimumparticipants
-                                + "," + fmtStrDB(msgArgs[4]) + ")";
-                    } else {
-                        queries[0] = "INSERT INTO NotScheduledMessage(REQUESTNUMBER, DATEINSERTED, PROPOSEDTIME, MINIMUM, LISTOFCONFIRMEDPARTICIPANTS, TOPIC)"
-                                + " VALUES (" + fmtStrDB(Requestnumberquery) + "," + fmtStrDB(msgArgs[2])
-                                + "," + fmtStrDB(msgArgs[3]) + "," + Minimumparticipants
-                                + "," + fmtStrDB(lOfConfPart) + "," + fmtStrDB(msgArgs[4]) + ")";
+                        if (option == 1) {
+                            if (lOfConfPart == "") {
+                                queries[0] = "INSERT INTO NotScheduledMessage(REQUESTNUMBER, DATEINSERTED, PROPOSEDTIME, MINIMUM, TOPIC)"
+                                        + " VALUES (" + fmtStrDB(Requestnumberquery) + "," + fmtStrDB(msgArgs[2])
+                                        + "," + fmtStrDB(msgArgs[3]) + "," + Minimumparticipants
+                                        + "," + fmtStrDB(msgArgs[4]) + ")";
+                            } else {
+                                queries[0] = "INSERT INTO NotScheduledMessage(REQUESTNUMBER, DATEINSERTED, PROPOSEDTIME, MINIMUM, LISTOFCONFIRMEDPARTICIPANTS, TOPIC)"
+                                        + " VALUES (" + fmtStrDB(Requestnumberquery) + "," + fmtStrDB(msgArgs[2])
+                                        + "," + fmtStrDB(msgArgs[3]) + "," + Minimumparticipants
+                                        + "," + fmtStrDB(lOfConfPart) + "," + fmtStrDB(msgArgs[4]) + ")";
+                            }
+
+                            NotScheduledMessage NotScheduledMsg = new NotScheduledMessage(Requestnumberquery, msgArgs[2], msgArgs[3],
+                                    Integer.valueOf(Minimumparticipants), ListofConfParticipants, msgArgs[4]);
+
+                            // NotScheduled message
+                            String currMsg = NotScheduledMsg.printNotSchedMessage();
+
+                            // send a message to the requester
+                            sendUdpPacket(currMsg, getPortByClientName(Requester), ds,Requester);
+                        }
+
+                        queries[1] = "INSERT INTO CancelMessage(MEETINGNUMBER, WHOCANCELED)" + " VALUES (" + fmtStrDB(msgArgs[1])
+                                + "," + fmtStrDB(InetAddress.getLocalHost().getHostName()) + ")";
+                        queries[2] = "DELETE FROM RoomReservation WHERE MEETINGNUMBER =" + fmtStrDB(msgArgs[1]);
+                        queries[3] = "DELETE FROM Bookings WHERE MEETINGNUMBER = " + fmtStrDB(msgArgs[1]);
+
+
+                        CancelMessageI CancelMsg = new CancelMessageI(msgArgs[1]);
+
+                        // Cancel Message
+                        String currMsg2 = CancelMsg.printCancelIMessage();
+                        String[] arrayoflOfConfPart = lOfConfPart.split(",");
+
+                        // send Message to list of Confirmed Participants
+                        sendUdpPacketToLOP(arrayoflOfConfPart, ds, currMsg2);
+
+                        // send a message to the requester
+                        if (option == 2)
+                            sendUdpPacket(currMsg2, getPortByClientName(Requester), ds,Requester);
                     }
-
-                    NotScheduledMessage NotScheduledMsg = new NotScheduledMessage(Requestnumberquery, msgArgs[2], msgArgs[3],
-                            Integer.valueOf(Minimumparticipants), ListofConfParticipants, msgArgs[4]);
-
-                    // NotScheduled message
-                    String currMsg = NotScheduledMsg.printNotSchedMessage();
-
-                    // send a message to the requester
-                    sendUdpPacket(currMsg, getPortByClientName(Requester), ds,Requester);
                 }
-
-                queries[1] = "INSERT INTO CancelMessage(MEETINGNUMBER, WHOCANCELED)" + " VALUES (" + fmtStrDB(msgArgs[1])
-                        + "," + fmtStrDB(InetAddress.getLocalHost().getHostName()) + ")";
-                queries[2] = "DELETE FROM RoomReservation WHERE MEETINGNUMBER =" + fmtStrDB(msgArgs[1]);
-                queries[3] = "DELETE FROM Bookings WHERE MEETINGNUMBER = " + fmtStrDB(msgArgs[1]);
-
-
-                CancelMessageI CancelMsg = new CancelMessageI(msgArgs[1]);
-
-                // Cancel Message
-                String currMsg2 = CancelMsg.printCancelIMessage();
-                String[] arrayoflOfConfPart = lOfConfPart.split(",");
-
-                // send Message to list of Confirmed Participants
-                sendUdpPacketToLOP(arrayoflOfConfPart, ds, currMsg2);
-
-                // send a message to the requester
-                if (option == 2)
-                    sendUdpPacket(currMsg2, getPortByClientName(Requester), ds,Requester);
             }
-            executeMultipleQ(conn, queries);
 
-            // TODO - make sure the appointment booking is done accordingly
+            executeMultipleQ(conn, queries);
 
         } catch (SQLException | IOException ex) {
             ex.printStackTrace();
@@ -1089,6 +1095,8 @@ public class Utility {
      * @throws IOException
      */
     public static void sendUdpPacket(String msg, Integer port, DatagramSocket ds, String s) throws IOException {
+        logMessages(msg);
+
         byte[] buf = msg.getBytes();
         InetAddress iP = InetAddress.getByName(s.trim());
         DatagramPacket DpSend = new DatagramPacket(buf, buf.length, iP, port);
@@ -1105,11 +1113,13 @@ public class Utility {
      * @throws SQLException
      */
     public static void sendUdpPacketToLOP(String[] lOP, DatagramSocket ds, String msg) throws IOException, SQLException {
+        logMessages(msg);
+
         for (int i = 0; i < lOP.length; i++) {
             if(!lOP[i].equals("")) {
                 InetAddress ipLOP = InetAddress.getByName(lOP[i].trim());
                 byte[] buf_s = msg.getBytes();
-                DatagramPacket DpSend = new DatagramPacket(buf_s, buf_s.length, ipLOP, getPortByClientName(lOP[i]));
+                DatagramPacket DpSend = new DatagramPacket(buf_s, buf_s.length, ipLOP, getPortByClientName(lOP[i].trim()));
                 ds.send(DpSend);
             }
         }
@@ -1202,6 +1212,17 @@ public class Utility {
             }
         });
         timer.start();
+    }
+
+    /**
+     * logs messages into a text file
+     * @param s
+     * @throws IOException
+     */
+    public static void logMessages(String s) throws IOException {
+        PrintWriter writer = new PrintWriter(new FileWriter("log.txt", true));
+        writer.println(s);
+        writer.close();
     }
 
     /**
