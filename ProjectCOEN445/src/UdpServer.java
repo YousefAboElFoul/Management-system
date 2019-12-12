@@ -10,6 +10,7 @@ import java.util.concurrent.PriorityBlockingQueue;
 public class UdpServer extends Utility {
 
 	private static DatagramSocket ds;
+	private static String inputText;
 
 	public static void main(String[] args) throws Exception {
 
@@ -32,6 +33,10 @@ public class UdpServer extends Utility {
 
 		// Queue that holds all the pending messages
 		PriorityBlockingQueue<String> pendingMessagesToBeTreated = new PriorityBlockingQueue<>();
+
+		UIDisplay.initOutput("UDP Server");
+
+		inputText = null;
 
 		/**
 		 *  Receiving Thread
@@ -138,41 +143,42 @@ public class UdpServer extends Utility {
 					// Sending Configuration
 					String input = null;
 
-					Scanner sc = new Scanner(System.in);
-					System.out.println("Please Input your inputs");
-
 					try {
-						String inp = sc.nextLine();
-						boolean good = false;
-						while (!good) {
-							while (!inp.contains(String.valueOf(Message.ROOM_CHANGE_CODE))) {
-								inp = sc.nextLine();
-								System.out.println("\nInvalid input message\n\n");
+						if (inputText != null) {
+
+							String inp = inputText;
+
+							boolean good = false;
+							while (!good) {
+								while (!inp.contains(String.valueOf(Message.ROOM_CHANGE_CODE))) {
+									inp = inputText;
+									System.out.println("\nInvalid input message\n\n");
+								}
+
+								input = getUserInput(inp, null);
+								if (!input.equals("Invalid Message"))
+									good = true;
+								else {
+									System.out.println("\nRoom number does not exist\n\n");
+									System.out.println("Please Input your inputs");
+									inp = inputText;
+								}
 							}
 
-							input = getUserInput(inp, null);
-							if (!input.equals("Invalid Message"))
-								good = true;
-							else {
-								System.out.println("\nRoom number does not exist\n\n");
-								System.out.println("Please Input your inputs");
-								inp = sc.nextLine();
-							}
+							//reset inputText
+							inputText = null;
+
+							System.out.println("\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-");
+							// For debugging purposes
+							System.out.println(input);
+							input = input.replace("{", "");
+							System.out.println(parsingMessage(input, null, 1).toString());
+							// Storing in the pending queue
+							pendingMessagesToBeTreated.add(input + "#" + " ");
+
+							System.out.println("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-");
+
 						}
-
-						System.out.println("\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-");
-						// For debugging purposes
-						System.out.println(input);
-						input = input.replace("{","");
-						System.out.println(parsingMessage(input, null, 1).toString());
-						// Storing in the pending queue
-						pendingMessagesToBeTreated.add(input + "#" + " ");
-
-						System.out.println("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-");
-
-						// break the loop if user enters "bye"
-						if (inp.equals("bye"))
-							break;
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
@@ -226,4 +232,11 @@ public class UdpServer extends Utility {
 		return ds;
 	}
 
+	/**
+	 * get user input from the JFrame
+	 * @param inputUI
+	 */
+	public static void getJFrameInput(String inputUI) {
+		inputText = inputUI;
+	}
 }

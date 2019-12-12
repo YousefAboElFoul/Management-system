@@ -974,8 +974,9 @@ public class Utility {
             String Requester = null;
             String Roomnumber = null;
 
+            int numOfConfPart = 0;
+
             if (res.next()) {
-                int numOfConfPart = 0;
 
                 lOfConfPart += res.getString(1);
 
@@ -984,98 +985,92 @@ public class Utility {
                 }
 
                 numOfConfPart = lOfConfPart.split(",").length;
+            }
 
-                if (res2.next()) {
+            if (res2.next()) {
 
-                    Requestnumberquery = res2.getString(1);
-                    Roomnumber =res2.getString(2);
-                    Requester =res2.getString(3);
-                    Minimumparticipants = res2.getString(4);
+                Requestnumberquery = res2.getString(1);
+                Roomnumber =res2.getString(2);
+                Requester =res2.getString(3);
+                Minimumparticipants = res2.getString(4);
 
 
-                    // logic for the forming and sending the confirmation to list of participants
-                    // and scheduled to requester
+                // logic for the forming and sending the confirmation to list of participants
+                // and scheduled to requester
 
-                    if (numOfConfPart >= Integer.valueOf(Minimumparticipants)) {
+                if (numOfConfPart >= Integer.valueOf(Minimumparticipants)) {
 
-                        // Queries
-                        queries[0] = "INSERT INTO ScheduledMessage(REQUESTNUMBER, MEETINGNUMBER, ROOMNUMBER, LISTOFCONFIRMEDPARTICIPANTS)"
-                                + " VALUES (" + fmtStrDB(Requestnumberquery) + "," + fmtStrDB(msgArgs[1]) + ", " + fmtStrDB(Roomnumber) + "," + fmtStrDB(lOfConfPart)
-                                + ")";
-                        queries[1] = "INSERT INTO ConfirmMessage(MEETINGNUMBER, ROOMNUMBER)" + " VALUES (" + fmtStrDB(msgArgs[1])
-                                + ", " + fmtStrDB(Roomnumber) + ")";
+                    // Queries
+                    queries[0] = "INSERT INTO ScheduledMessage(REQUESTNUMBER, MEETINGNUMBER, ROOMNUMBER, LISTOFCONFIRMEDPARTICIPANTS)"
+                            + " VALUES (" + fmtStrDB(Requestnumberquery) + "," + fmtStrDB(msgArgs[1]) + ", " + fmtStrDB(Roomnumber) + "," + fmtStrDB(lOfConfPart)
+                            + ")";
+                    queries[1] = "INSERT INTO ConfirmMessage(MEETINGNUMBER, ROOMNUMBER)" + " VALUES (" + fmtStrDB(msgArgs[1])
+                            + ", " + fmtStrDB(Roomnumber) + ")";
 
-                        // LIST_OF_CONFIRMED_PARTICIPANTS
-                        ArrayList<String> ListofConfParticipants = new ArrayList<String>(Arrays.asList(lOfConfPart));
-                        ScheduledMessage ScheduledMsg = new ScheduledMessage(Requestnumberquery, msgArgs[1], Roomnumber, ListofConfParticipants);
-                        // String MT_NUMBER, String ROOM_NUMBER
-                        ConfirmMessage ConfirmMsg = new ConfirmMessage(msgArgs[1], Roomnumber);
+                    // LIST_OF_CONFIRMED_PARTICIPANTS
+                    ArrayList<String> ListofConfParticipants = new ArrayList<String>(Arrays.asList(lOfConfPart));
+                    ScheduledMessage ScheduledMsg = new ScheduledMessage(Requestnumberquery, msgArgs[1], Roomnumber, ListofConfParticipants);
+                    // String MT_NUMBER, String ROOM_NUMBER
+                    ConfirmMessage ConfirmMsg = new ConfirmMessage(msgArgs[1], Roomnumber);
 
-                        // Scheduled Message
-                        String currMsg = ScheduledMsg.printSchedMessage();
+                    // Scheduled Message
+                    String currMsg = ScheduledMsg.printSchedMessage();
 
-                        // Confirm message
-                        String currMsg2 = ConfirmMsg.printConfMessage();
-                        String[]arrayoflOfConfPart =lOfConfPart.split(",");
+                    // Confirm message
+                    String currMsg2 = ConfirmMsg.printConfMessage();
+                    String[]arrayoflOfConfPart =lOfConfPart.split(",");
 
-                        //Send Message to list of Confirmed Participants
-                        sendUdpPacketToLOP(arrayoflOfConfPart, ds, currMsg2);
+                    //Send Message to list of Confirmed Participants
+                    sendUdpPacketToLOP(arrayoflOfConfPart, ds, currMsg2);
 
-                        // send a message to the requester
-                        sendUdpPacket(currMsg, getPortByClientName(Requester), ds, Requester);
-                    }
-                    else {
-                        // LIST_OF_CONFIRMED_PARTICIPANTS
-                        ArrayList<String> ListofConfParticipants = new ArrayList<String>(Arrays.asList(lOfConfPart));
+                    // send a message to the requester
+                    sendUdpPacket(currMsg, getPortByClientName(Requester), ds, Requester);
+                }
+                else {
+                    // LIST_OF_CONFIRMED_PARTICIPANTS
+                    ArrayList<String> ListofConfParticipants = new ArrayList<String>(Arrays.asList(lOfConfPart));
 
-                        while (res2.next()) {
-                            Requestnumberquery = res2.getString(1);
-                            Requester = res2.getString(3);
-                            Minimumparticipants = res2.getString(4);
+                    if (option == 1) {
+                        if (lOfConfPart == "") {
+                            queries[0] = "INSERT INTO NotScheduledMessage(REQUESTNUMBER, DATEINSERTED, PROPOSEDTIME, MINIMUM, TOPIC)"
+                                    + " VALUES (" + fmtStrDB(Requestnumberquery) + "," + fmtStrDB(msgArgs[2])
+                                    + "," + fmtStrDB(msgArgs[3]) + "," + Minimumparticipants
+                                    + "," + fmtStrDB(msgArgs[4]) + ")";
+                        } else {
+                            queries[0] = "INSERT INTO NotScheduledMessage(REQUESTNUMBER, DATEINSERTED, PROPOSEDTIME, MINIMUM, LISTOFCONFIRMEDPARTICIPANTS, TOPIC)"
+                                    + " VALUES (" + fmtStrDB(Requestnumberquery) + "," + fmtStrDB(msgArgs[2])
+                                    + "," + fmtStrDB(msgArgs[3]) + "," + Minimumparticipants
+                                    + "," + fmtStrDB(lOfConfPart) + "," + fmtStrDB(msgArgs[4]) + ")";
                         }
 
-                        if (option == 1) {
-                            if (lOfConfPart == "") {
-                                queries[0] = "INSERT INTO NotScheduledMessage(REQUESTNUMBER, DATEINSERTED, PROPOSEDTIME, MINIMUM, TOPIC)"
-                                        + " VALUES (" + fmtStrDB(Requestnumberquery) + "," + fmtStrDB(msgArgs[2])
-                                        + "," + fmtStrDB(msgArgs[3]) + "," + Minimumparticipants
-                                        + "," + fmtStrDB(msgArgs[4]) + ")";
-                            } else {
-                                queries[0] = "INSERT INTO NotScheduledMessage(REQUESTNUMBER, DATEINSERTED, PROPOSEDTIME, MINIMUM, LISTOFCONFIRMEDPARTICIPANTS, TOPIC)"
-                                        + " VALUES (" + fmtStrDB(Requestnumberquery) + "," + fmtStrDB(msgArgs[2])
-                                        + "," + fmtStrDB(msgArgs[3]) + "," + Minimumparticipants
-                                        + "," + fmtStrDB(lOfConfPart) + "," + fmtStrDB(msgArgs[4]) + ")";
-                            }
+                        NotScheduledMessage NotScheduledMsg = new NotScheduledMessage(Requestnumberquery, msgArgs[2], msgArgs[3],
+                                Integer.valueOf(Minimumparticipants), ListofConfParticipants, msgArgs[4]);
 
-                            NotScheduledMessage NotScheduledMsg = new NotScheduledMessage(Requestnumberquery, msgArgs[2], msgArgs[3],
-                                    Integer.valueOf(Minimumparticipants), ListofConfParticipants, msgArgs[4]);
-
-                            // NotScheduled message
-                            String currMsg = NotScheduledMsg.printNotSchedMessage();
-
-                            // send a message to the requester
-                            sendUdpPacket(currMsg, getPortByClientName(Requester), ds,Requester);
-                        }
-
-                        queries[1] = "INSERT INTO CancelMessage(MEETINGNUMBER, WHOCANCELED)" + " VALUES (" + fmtStrDB(msgArgs[1])
-                                + "," + fmtStrDB(InetAddress.getLocalHost().getHostName()) + ")";
-                        queries[2] = "DELETE FROM RoomReservation WHERE MEETINGNUMBER =" + fmtStrDB(msgArgs[1]);
-                        queries[3] = "DELETE FROM Bookings WHERE MEETINGNUMBER = " + fmtStrDB(msgArgs[1]);
-
-
-                        CancelMessageI CancelMsg = new CancelMessageI(msgArgs[1]);
-
-                        // Cancel Message
-                        String currMsg2 = CancelMsg.printCancelIMessage();
-                        String[] arrayoflOfConfPart = lOfConfPart.split(",");
-
-                        // send Message to list of Confirmed Participants
-                        sendUdpPacketToLOP(arrayoflOfConfPart, ds, currMsg2);
+                        // NotScheduled message
+                        String currMsg = NotScheduledMsg.printNotSchedMessage();
 
                         // send a message to the requester
-                        if (option == 2)
-                            sendUdpPacket(currMsg2, getPortByClientName(Requester), ds,Requester);
+                        sendUdpPacket(currMsg, getPortByClientName(Requester), ds,Requester);
                     }
+
+                    queries[1] = "INSERT INTO CancelMessage(MEETINGNUMBER, WHOCANCELED)" + " VALUES (" + fmtStrDB(msgArgs[1])
+                            + "," + fmtStrDB(InetAddress.getLocalHost().getHostName()) + ")";
+                    queries[2] = "DELETE FROM RoomReservation WHERE MEETINGNUMBER =" + fmtStrDB(msgArgs[1]);
+                    queries[3] = "DELETE FROM Bookings WHERE MEETINGNUMBER = " + fmtStrDB(msgArgs[1]);
+
+
+                    CancelMessageI CancelMsg = new CancelMessageI(msgArgs[1]);
+
+                    // Cancel Message
+                    String currMsg2 = CancelMsg.printCancelIMessage();
+                    String[] arrayoflOfConfPart = lOfConfPart.split(",");
+
+                    // send Message to list of Confirmed Participants
+                    sendUdpPacketToLOP(arrayoflOfConfPart, ds, currMsg2);
+
+                    // send a message to the requester
+                    if (option == 2)
+                        sendUdpPacket(currMsg2, getPortByClientName(Requester), ds,Requester);
                 }
             }
 
@@ -1220,7 +1215,11 @@ public class Utility {
      * @throws IOException
      */
     public static void logMessages(String s) throws IOException {
-        PrintWriter writer = new PrintWriter(new FileWriter("log.txt", true));
+        UIDisplay.textArea.append("*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-\n"
+                + s + "\n");
+
+        PrintWriter writer = new PrintWriter(new FileWriter("my_log.txt", true));
+        writer.println("\n*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-*-");
         writer.println(s);
         writer.close();
     }

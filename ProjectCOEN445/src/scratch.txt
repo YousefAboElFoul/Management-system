@@ -13,7 +13,9 @@ Assumptions
 - Assume that the MS will accept or reject on behalf of the client
 
 
-"We need to pause the threads when he is inputting stuff"
+** The rooms ***
+"EV02.301";
+"EV05.251"
 
 
 Input format for "CLIENT" sending messages
