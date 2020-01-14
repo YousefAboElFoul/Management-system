@@ -1,3 +1,6 @@
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.sql.SQLException;
 import java.util.Date;
 
 public class InviteMessage {
@@ -10,13 +13,30 @@ public class InviteMessage {
     public String IV_TOPIC;
     public String IV_REQUESTER;
 
-    public InviteMessage(String MT_NUMBER, String IV_DATE, String IV_TIME, String IV_TOPIC, String IV_REQUESTER) {
-        this.MT_NUMBER = MT_NUMBER;
+    // Since we have to auto increment the meeting number
+    private static int curr_mt_num = 1;
+
+    // The ip of the system running the udpClient
+    String myIp = InetAddress.getLocalHost().getHostName();
+
+    public InviteMessage(String in, String IV_DATE, String IV_TIME, String IV_TOPIC, String IV_REQUESTER) throws UnknownHostException, SQLException {
+        if (in.contains("-")) {
+            // use this notation on the server side
+            this.MT_NUMBER = in;
+        }
+        else {
+            // use this notation on the client side
+            this.MT_NUMBER = in + "-" + Utility.messageCount(myIp, curr_mt_num, true);
+        }
         this.IV_DATE = IV_DATE;
         this.IV_TIME = IV_TIME;
         setIV_DATETIME(IV_DATE, IV_TIME);
         this.IV_TOPIC = IV_TOPIC;
         this.IV_REQUESTER = IV_REQUESTER;
+    }
+
+    public static int getCURR_MT_NUM() {
+        return curr_mt_num;
     }
 
     public static int getIV_CODE() {
@@ -72,7 +92,7 @@ public class InviteMessage {
     }
 
     public String printInvMessage() {
-        String output = "{" + this.getIV_CODE() + " | " + this.getMT_NUMBER() + " | " + this.getIV_DATE() + " | " + this.getIV_TIME() + " | " + this.getIV_TOPIC() + " | " + this.getIV_REQUESTER() + "}";
+        String output = "{" + getIV_CODE() + " | " + this.getMT_NUMBER() + " | " + this.getIV_DATE() + " | " + this.getIV_TIME() + " | " + this.getIV_TOPIC() + " | " + this.getIV_REQUESTER() + "}";
         return output;
     }
 

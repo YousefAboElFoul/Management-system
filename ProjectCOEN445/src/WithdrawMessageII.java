@@ -20,7 +20,7 @@ public class WithdrawMessageII {
     }
 
     public String printWithdrawIIMessage() {
-        String output = "{" + this.getWDII_CODE() + " | " + this.getMT_NUMBER() + "}";
+        String output = "{" + getWDII_CODE() + " | " + this.getMT_NUMBER() + "}";
         return output;
     }
 }

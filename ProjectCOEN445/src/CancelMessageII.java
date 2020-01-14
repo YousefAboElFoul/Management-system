@@ -20,7 +20,7 @@ public class CancelMessageII {
     }
 
     public String printCancelIIMessage() {
-        String output = "{" + this.getCCII_CODE() + " | " + this.getMT_NUMBER() + "}";
+        String output = "{" + getCCII_CODE() + " | " + this.getMT_NUMBER() + "}";
         return output;
     }
 }

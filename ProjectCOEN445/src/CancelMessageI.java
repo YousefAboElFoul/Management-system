@@ -26,7 +26,7 @@ public class CancelMessageI {
     }
 
     public String printCancelIMessage() {
-        String output = "{" + this.getCCI_CODE() + " | " + this.getMT_NUMBER() + " | " + this.getCCI_MESSAGE() + "}";
+        String output = "{" + getCCI_CODE() + " | " + this.getMT_NUMBER() + " | " + this.getCCI_MESSAGE() + "}";
         return output;
     }
 

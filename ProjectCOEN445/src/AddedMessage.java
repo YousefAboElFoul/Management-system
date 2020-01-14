@@ -30,7 +30,7 @@ public class AddedMessage {
     }
 
     public String printAddedMessage() {
-        String output = "{" + this.getAD_CODE() + " | " + this.getMT_NUMBER() + " | " + this.getIP_ADDRESS() + "}";
+        String output = "{" + getAD_CODE() + " | " + this.getMT_NUMBER() + " | " + this.getIP_ADDRESS() + "}";
         return output;
     }
 }

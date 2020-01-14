@@ -1,20 +1,36 @@
+import java.net.InetAddress;
+import java.net.UnknownHostException;
+import java.sql.SQLException;
 import java.util.ArrayList;
 import java.util.Date;
 
 public class RequestMessage {
 
-    final static public int RQ_CODE = Message.REQUEST_CODE;
-    public String RQ_NUMBER = null ;
-    public Date RQ_DATETIME;
-    public String RQ_DATE;
-    public String RQ_TIME;
-    public int MIN_NUMBER_OF_PARTICIPANTS;
-    public ArrayList <String>LIST_OF_PARTICIPANTS;
-    public String RQ_TOPIC;
+    final static private int RQ_CODE = Message.REQUEST_CODE;
+    private String RQ_NUMBER = null ;
+    private Date RQ_DATETIME;
+    private String RQ_DATE;
+    private String RQ_TIME;
+    private int MIN_NUMBER_OF_PARTICIPANTS;
+    private ArrayList <String>LIST_OF_PARTICIPANTS;
+    private String RQ_TOPIC;
+
+    // Since we have to auto increment the request number
+    private static int curr_rq_num = 1;
+
+    // The ip of the system running the udpClient
+    String myIp = InetAddress.getLocalHost().getHostName();
 
 
-    public RequestMessage(String RQ_NUMBER, String RQ_DATE, String RQ_TIME, int MIN_NUMBER_OF_PARTICIPANTS, ArrayList<String> LIST_OF_PARTICIPANTS, String RQ_TOPIC) {
-        this.RQ_NUMBER = RQ_NUMBER;
+    public RequestMessage(String in, String RQ_DATE, String RQ_TIME, int MIN_NUMBER_OF_PARTICIPANTS, ArrayList<String> LIST_OF_PARTICIPANTS, String RQ_TOPIC) throws UnknownHostException, SQLException {
+        if (in.contains("-")) {
+            // use this notation on the server side
+            this.RQ_NUMBER = in;
+        }
+        else {
+            // use this notation on the client side and save the state
+            this.RQ_NUMBER = Utility.getClientNameFromDB(in) + "-" + Utility.messageCount(myIp, curr_rq_num, true);
+        }
         this.RQ_DATE = RQ_DATE;
         this.RQ_TIME = RQ_TIME;
         setRQ_DATETIME(RQ_DATE, RQ_TIME);
@@ -84,7 +100,7 @@ public class RequestMessage {
     }
 
     public String printReqMessage() {
-        String output = "{" + this.getRQ_CODE() + " | " + this.getRQ_NUMBER() + " | " + this.getRQ_DATE() + " | " + this.getRQ_TIME() + " | " + this.getMIN_NUMBER_OF_PARTICIPANTS() + " | " + this.getLIST_OF_PARTICIPANTS() + " | " + this.getRQ_TOPIC() + "}";
+        String output = "{" + getRQ_CODE() + " | " + this.getRQ_NUMBER() + " | " + this.getRQ_DATE() + " | " + this.getRQ_TIME() + " | " + this.getMIN_NUMBER_OF_PARTICIPANTS() + " | " + this.getLIST_OF_PARTICIPANTS() + " | " + this.getRQ_TOPIC() + "}";
         return output;
     }
 }

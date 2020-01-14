@@ -30,7 +30,7 @@ public class ResponseMessage {
     }
 
     public String printRespMessage() {
-        String output = "{" + this.getRP_CODE() + " | " + this.getRQ_NUMBER() + " | " + this.getRP_MESSAGE() + "}";
+        String output = "{" + getRP_CODE() + " | " + this.getRQ_NUMBER() + " | " + this.getRP_MESSAGE() + "}";
         return output;
     }
 }

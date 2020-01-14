@@ -52,7 +52,7 @@ public class ScheduledMessage {
     }
 
     public String printSchedMessage() {
-        String output = "{" + this.getSD_CODE() + " | " + this.getRQ_NUMBER() + " | " + this.getMT_NUMBER() + " | " + this.getROOM_NUMBER() + " | " + this.getLIST_OF_CONFIRMED_PARTICIPANTS() + "}";
+        String output = "{" + getSD_CODE() + " | " + this.getRQ_NUMBER() + " | " + this.getMT_NUMBER() + " | " + this.getROOM_NUMBER() + " | " + this.getLIST_OF_CONFIRMED_PARTICIPANTS() + "}";
         return output;
     }
 }

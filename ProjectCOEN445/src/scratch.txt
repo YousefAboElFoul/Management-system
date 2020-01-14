@@ -4,13 +4,49 @@ Assumptions
 - Date format = MM/DD/YYYY
 - Can only book hour, since time slots are split per hour
 - One client per computer
+- We are dependent on the database for state saving and logging(Check with the prof)
+- Do not enter '#' in the entire message
+- Add Register table
+- Add Appointment book table (update c1 with this ip)
+- Add a meeting to my agenda the moment I accept
+- Remove the meeting the moment I receive a cancel/not schedule
+- Assume that the MS will accept or reject on behalf of the client
 
 
-Input format for different messages
+** The rooms ***
+"EV02.301";
+"EV05.251"
+
+
+Input format for "CLIENT" sending messages
 ***********************************
-- For REQUEST MESSAGE (rq rq# date time min_part# part_list topic)
-        1110 1 03/25/2019 15:30 2 12,13,14 welcome
-- Similar for all the others
+- For REQUEST MESSAGE (rq_code date time min_part# part_list topic)
+        1110 03/25/2019 15:00 3 12,13,14 welcome
+        1110 03/25/2019 15:00 1 YvannMBPro2.local welcome
+
+- FOR ACCEPT MESSAGE (accept_code mt#)
+        3330 YvannMBPro2.local-2
+
+- FOR REJECT MESSAGE (reject_code mt#)
+        3331 172.30.60.219-2
+
+- FOR CANCELII MESSAGE (cancel2_code mt#)
+        6661 YvannMBPro2.local-2
+
+- FOR WITHDRAWII MESSAGE (withdraw2_code mt#)
+        7771 YvannMBPro2.local-2
+
+- FOR ADD MESSAGE (add_code mt#)
+        8880 /127.0.0.1-1
+
+
+Input format for "SERVER" sending messages
+***********************************
+- FOR ROOMCHANGE MESSAGE (mt# new_room)
+        9999 YvannMBPro2.local-2 EV02.301
+
+- FOR INVITE MESSAGE (inv_code date time topic requester)
+        2222 03/25/2019 15:30 welcome /127.0.0.1
 
 
 MESSAGES RECEIVED BY THE SERVER
@@ -39,3 +75,13 @@ MESSAGES RECEIVED BY THE CLIENT | (*) = to the Organizer
 ROOM
 ****
 - If the state is True, it means it is "free", otherwise "false".
+
+
+Random
+****
+//    SimpleDateFormat formatter = new SimpleDateFormat("dd-MM-yyyy");
+//  Date date = formatter.parse(s1);
+
+//DateFormat df = new SimpleDateFormat("HH:mm");
+// java.sql.Time timeValue = new java.sql.Time(df.parse(s2).getTime());
+//java.sql.Time sql2 = new java.sql.Time(timeValue.getTime());
